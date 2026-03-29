@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Parchis</string>
+    <string name="iniciar_partida_como_invitado">Iniciar partida como invitado</string>
+    <string name="parch_s">PARCHÍS</string>
+    <string name="iniciar_sesi_n">Iniciar sesión</string>
+    <string name="registrarse">Registrarse</string>
+    <string name="estad_sticas">Estadísticas</string>
+    <string name="logotipo_de_la_aplicaci_n">Logotipo de la aplicación</string>
+    <string name="iniciar_partida">Iniciar partida</string>
+    <string name="unirse_a_partida">Unirse a partida</string>
+    <string name="cerrar_sesi_n">Cerrar sesión</string>
+    <string name="para_volver_al_menu">Para volver al menu</string>
 </resources>
