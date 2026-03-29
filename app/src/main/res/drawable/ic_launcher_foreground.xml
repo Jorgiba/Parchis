@@ -29,7 +29,7 @@
 
     <!-- Bordes del centro -->
     <path
-        android:strokeColor="#000000"
+        android:strokeColor="@color/black"
         android:strokeWidth="0.6"
         android:pathData="M47.5,47.5 L60.5,60.5 M60.5,47.5 L47.5,60.5 M47.5,47.5 h13 v13 h-13 z" />
 

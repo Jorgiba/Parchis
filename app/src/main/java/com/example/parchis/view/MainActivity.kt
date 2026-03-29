@@ -20,18 +20,16 @@ class MainActivity : AppCompatActivity() {
         btnRegistrar = findViewById(R.id.btnRegister)
 
         btnIniciarSesion.setOnClickListener {
-            // Lógica para iniciar sesión
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, LoginActivity::class.java))
         }
 
         btnIniciarPartida.setOnClickListener {
-            // Lógica para iniciar partida como invitado
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, GameSettingsActivity::class.java))
         }
 
         btnRegistrar.setOnClickListener {
             // Lógica para registrarse
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, RegisterActivity::class.java))
         }
     }
 }

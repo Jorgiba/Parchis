@@ -13,6 +13,10 @@ class JugadorHumano(nombre: String, color: ColorParchis) : Jugador(nombre, color
     override fun esBot() = false
 }
 
+class JugadorRegistrado(val usuario: UsuarioRegistrado, color: ColorParchis) : Jugador(usuario.username!!, color) {
+    override fun esBot() = false
+}
+
 class Bot(nombre: String, color: ColorParchis, val dificultad: DificultadBot) : Jugador(nombre, color) {
     override fun esBot() = true
 }

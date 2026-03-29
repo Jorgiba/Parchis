@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
-    tools:context=".StatsActivity">
+    android:background="@color/white"
+    tools:context=".view.StatsActivity">
 
     <ImageButton
         android:id="@+id/btnBackStats"
@@ -14,6 +14,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/boton_para_volver_desde_estadisticas"
         android:src="@drawable/ic_back"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -23,8 +24,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="28dp"
-        android:text="Estadísticas"
-        android:textColor="#000000"
+        android:text="@string/estad_sticas"
+        android:textColor="@color/black"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -36,7 +37,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
         android:text="Partidas jugadas: 30"
-        android:textColor="#000000"
+        android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -49,7 +50,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="24dp"
         android:text="Victorias: 23"
-        android:textColor="#000000"
+        android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvGamesPlayed" />
@@ -61,7 +62,7 @@
         android:layout_marginTop="24dp"
         android:layout_marginEnd="40dp"
         android:text="Derrotas: 7"
-        android:textColor="#000000"
+        android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvGamesPlayed" />
@@ -73,7 +74,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="60dp"
         android:text="Fichas comidas: 50"
-        android:textColor="#000000"
+        android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvWins" />
@@ -85,7 +86,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="60dp"
         android:text="Últimas partidas"
-        android:textColor="#000000"
+        android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvPiecesEaten" />
@@ -97,7 +98,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="16dp"
         android:text="Victoria - Partida local\nVictoria - Partida online\nDerrota - Partida online\nVictoria - Partida online\nVictoria - Partida local"
-        android:textColor="#000000"
+        android:textColor="@color/black"
         android:lineSpacingExtra="4dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvLastGamesTitle" />

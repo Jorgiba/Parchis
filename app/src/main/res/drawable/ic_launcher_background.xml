@@ -12,7 +12,7 @@
 
     <!-- Tablero principal (blanco) -->
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="@color/white"
         android:pathData="M18,18h72v72h-72z" />
 
     <!-- CASAS CUADRADAS (26x26) -->
@@ -39,23 +39,23 @@
     <path android:fillColor="#4CAF50" android:pathData="M21.2,50.6h32.8v6.7h-32.8z" /> <!-- Meta Verde -->
 
     <!-- REJILLAS DE LOS PASILLOS -->
-    <path android:strokeColor="#000000" android:strokeWidth="0.6"
+    <path android:strokeColor="@color/black" android:strokeWidth="0.6"
         android:pathData="M44,18v36 M50.6,18v36 M57.3,18v36 M64,18v36
                           M44,54v36 M50.6,54v36 M57.3,54v36 M64,54v36
                           M18,44h36 M18,50.6h36 M18,57.3h36 M18,64h36
                           M54,44h36 M54,50.6h36 M54,57.3h36 M54,64h36" />
-    <path android:strokeColor="#000000" android:strokeWidth="0.6"
+    <path android:strokeColor="@color/black" android:strokeWidth="0.6"
         android:pathData="M44,21.2h20 M44,24.5h20 M44,27.7h20 M44,31h20 M44,34.2h20 M44,37.5h20 M44,40.7h20 M44,44h20
                           M44,64h20 M44,67.2h20 M44,70.5h20 M44,73.7h20 M44,77h20 M44,80.2h20 M44,83.5h20 M44,86.7h20
                           M21.2,44v20 M24.5,44v20 M27.7,44v20 M31,44v20 M34.2,44v20 M37.5,44v20 M40.7,44v20 M44,44v20
                           M64,44v20 M67.2,44v20 M70.5,44v20 M73.7,44v20 M77,44v20 M80.2,44v20 M83.5,44v20 M86.7,44v20" />
 
     <!-- DIAGONALES AL CENTRO -->
-    <path android:strokeColor="#000000" android:strokeWidth="0.6"
+    <path android:strokeColor="@color/black" android:strokeWidth="0.6"
         android:pathData="M44,44 L64,64 M64,44 L44,64" />
 
     <!-- BORDES DE LAS CASAS Y CIRCULOS -->
-    <path android:strokeColor="#000000" android:strokeWidth="0.6"
+    <path android:strokeColor="@color/black" android:strokeWidth="0.6"
         android:pathData="M18,18h26v26h-26z M64,18h26v26h-26z M18,64h26v26h-26z M64,64h26v26h-26z
                           M26,26m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0 M36,26m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0 M26,36m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0 M36,36m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0
                           M72,26m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0 M82,26m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0 M72,36m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0 M82,36m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0
@@ -63,7 +63,7 @@
                           M72,72m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0 M82,72m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0 M72,82m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0 M82,82m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0" />
 
     <!-- BORDE EXTERIOR DEL TABLERO -->
-    <path android:strokeColor="#000000" android:strokeWidth="0.6"
+    <path android:strokeColor="@color/black" android:strokeWidth="0.6"
         android:pathData="M18,18h72v72h-72z" />
 
 </vector>

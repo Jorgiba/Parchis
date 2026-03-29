@@ -4,17 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
-    tools:context=".GameActivity">
+    android:background="@color/white"
+    tools:context=".view.GameActivity">
 
     <TextView
         android:id="@+id/tvTurn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
-        android:text="TURNO DEL\nJUGADOR AMARILLO"
+        android:text="TURNO DEL\nJUGADOR ..."
         android:textAlignment="center"
-        android:textColor="#000000"
+        android:textColor="@color/black"
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -22,10 +22,10 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Jugadores Info -->
-    <TextView android:id="@+id/tvPlayer1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="80dp" android:text="Jugador 1" android:textColor="#000000" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" />
+    <TextView android:id="@+id/tvPlayer1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="80dp" android:text="Jugador 1" android:textColor="@color/black" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" />
     <View android:layout_width="30dp" android:layout_height="15dp" android:layout_marginStart="8dp" android:background="#2196F3" app:layout_constraintBottom_toBottomOf="@id/tvPlayer1" app:layout_constraintStart_toEndOf="@id/tvPlayer1" app:layout_constraintTop_toTopOf="@id/tvPlayer1" />
 
-    <TextView android:id="@+id/tvPlayer2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="80dp" android:layout_marginEnd="24dp" android:text="Jugador 2" android:textColor="#000000" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" />
+    <TextView android:id="@+id/tvPlayer2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="80dp" android:layout_marginEnd="24dp" android:text="Jugador 2" android:textColor="@color/black" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" />
     <View android:layout_width="30dp" android:layout_height="15dp" android:layout_marginEnd="8dp" android:background="#FFEB3B" app:layout_constraintBottom_toBottomOf="@id/tvPlayer2" app:layout_constraintEnd_toStartOf="@id/tvPlayer2" app:layout_constraintTop_toTopOf="@id/tvPlayer2" />
 
     <!-- Tablero -->
@@ -34,16 +34,17 @@
         android:layout_width="320dp"
         android:layout_height="320dp"
         android:layout_marginTop="40dp"
+        android:contentDescription="@string/tablero"
         android:src="@drawable/logo_parchis"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTurn" />
 
     <!-- Más Jugadores Info -->
-    <TextView android:id="@+id/tvPlayer4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="16dp" android:text="Jugador 4" android:textColor="#000000" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/imageViewGameBoard" />
+    <TextView android:id="@+id/tvPlayer4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="16dp" android:text="Jugador 4" android:textColor="@color/black" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/imageViewGameBoard" />
     <View android:layout_width="30dp" android:layout_height="15dp" android:layout_marginStart="8dp" android:background="#F44336" app:layout_constraintBottom_toBottomOf="@id/tvPlayer4" app:layout_constraintStart_toEndOf="@id/tvPlayer4" app:layout_constraintTop_toTopOf="@id/tvPlayer4" />
 
-    <TextView android:id="@+id/tvPlayer3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:layout_marginEnd="24dp" android:text="Jugador 3" android:textColor="#000000" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@id/imageViewGameBoard" />
+    <TextView android:id="@+id/tvPlayer3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:layout_marginEnd="24dp" android:text="Jugador 3" android:textColor="@color/black" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@id/imageViewGameBoard" />
     <View android:layout_width="30dp" android:layout_height="15dp" android:layout_marginEnd="8dp" android:background="#4CAF50" app:layout_constraintBottom_toBottomOf="@id/tvPlayer3" app:layout_constraintEnd_toStartOf="@id/tvPlayer3" app:layout_constraintTop_toTopOf="@id/tvPlayer3" />
 
     <!-- Dado Contenedor -->
@@ -64,17 +65,18 @@
             android:id="@+id/tvDiceNumber"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="?"
-            android:textColor="#FFFFFF"
+            android:text=""
+            android:textColor="@color/white"
             android:textSize="32sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Lanzar dado"
-            android:textColor="#FFFFFF"
-            android:textSize="10sp" />
+            android:text="@string/lanzar_dado"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            tools:ignore="SmallSp" />
     </LinearLayout>
 
     <Button
@@ -83,8 +85,8 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:backgroundTint="#F44336"
-        android:text="Abandonar partida"
+        android:backgroundTint="@color/rojo"
+        android:text="@string/abandonar_partida"
         android:textAllCaps="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
