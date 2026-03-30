@@ -19,34 +19,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".view.HomeActivity"
-            android:exported="false">
-        </activity>
-        <activity
-            android:name=".view.GameSettingsActivity"
-            android:exported="false">
-        </activity>
-        <activity
-            android:name=".view.GameActivity"
-            android:exported="false">
-        </activity>
-        <activity
-            android:name=".view.StatsActivity"
-            android:exported="false">
-        </activity>
-        <activity
-            android:name=".view.GameModeActivity"
-            android:exported="false">
-        </activity>
-        <activity
-            android:name=".view.RegisterActivity"
-            android:exported="false">
-        </activity>
-        <activity
-            android:name=".view.LoginActivity"
-            android:exported="false">
-        </activity>
     </application>
 
 </manifest>

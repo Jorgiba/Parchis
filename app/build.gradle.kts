@@ -47,6 +47,8 @@ dependencies {
     // Delegados para fragmentos y actividades (viewModels())
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.activity.ktx)
+    implementation("androidx.navigation:navigation-fragment-ktx:2.9.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.9.7")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
