@@ -7,6 +7,12 @@ data class Ficha(
     var estado: EstadoFicha = EstadoFicha.EN_CASA
 )
 
+enum class ColorParchis {
+    ROJO,
+    AZUL,
+    VERDE,
+    AMARILLO
+}
 enum class EstadoFicha {
     EN_CASA,
     EN_TABLERO,

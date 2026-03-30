@@ -13,8 +13,8 @@ class LoginViewModel : ViewModel() {
 
     fun login(username: String, password: String) {
         if (username.isNotEmpty() && password.isNotEmpty()) {
-            if (username.equals("Marco", ignoreCase = true)) {
-                // Si es Marco, cargamos sus datos de prueba predefinidos
+            if (username.equals("Ejemplo", ignoreCase = true)) {
+                // Si es Ejemplo, cargamos sus datos de prueba predefinidos
                 SesionUsuario.cargarDatosPrueba()
             } else {
                 // Para cualquier otro usuario, creamos una sesión nueva (vacía)

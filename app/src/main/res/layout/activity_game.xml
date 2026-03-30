@@ -22,62 +22,157 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Jugadores Info -->
-    <TextView android:id="@+id/tvPlayer1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="80dp" android:text="Jugador 1" android:textColor="@color/black" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" />
-    <View android:layout_width="30dp" android:layout_height="15dp" android:layout_marginStart="8dp" android:background="#2196F3" app:layout_constraintBottom_toBottomOf="@id/tvPlayer1" app:layout_constraintStart_toEndOf="@id/tvPlayer1" app:layout_constraintTop_toTopOf="@id/tvPlayer1" />
-
-    <TextView android:id="@+id/tvPlayer2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="80dp" android:layout_marginEnd="24dp" android:text="Jugador 2" android:textColor="@color/black" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" />
-    <View android:layout_width="30dp" android:layout_height="15dp" android:layout_marginEnd="8dp" android:background="#FFEB3B" app:layout_constraintBottom_toBottomOf="@id/tvPlayer2" app:layout_constraintEnd_toStartOf="@id/tvPlayer2" app:layout_constraintTop_toTopOf="@id/tvPlayer2" />
-
-    <!-- Tablero -->
-    <ImageView
-        android:id="@+id/imageViewGameBoard"
-        android:layout_width="320dp"
-        android:layout_height="320dp"
-        android:layout_marginTop="40dp"
-        android:contentDescription="@string/tablero"
-        android:src="@drawable/logo_parchis"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTurn" />
-
-    <!-- Más Jugadores Info -->
-    <TextView android:id="@+id/tvPlayer4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="16dp" android:text="Jugador 4" android:textColor="@color/black" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/imageViewGameBoard" />
-    <View android:layout_width="30dp" android:layout_height="15dp" android:layout_marginStart="8dp" android:background="#F44336" app:layout_constraintBottom_toBottomOf="@id/tvPlayer4" app:layout_constraintStart_toEndOf="@id/tvPlayer4" app:layout_constraintTop_toTopOf="@id/tvPlayer4" />
-
-    <TextView android:id="@+id/tvPlayer3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:layout_marginEnd="24dp" android:text="Jugador 3" android:textColor="@color/black" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@id/imageViewGameBoard" />
-    <View android:layout_width="30dp" android:layout_height="15dp" android:layout_marginEnd="8dp" android:background="#4CAF50" app:layout_constraintBottom_toBottomOf="@id/tvPlayer3" app:layout_constraintEnd_toStartOf="@id/tvPlayer3" app:layout_constraintTop_toTopOf="@id/tvPlayer3" />
-
-    <!-- Dado Contenedor -->
     <LinearLayout
-        android:id="@+id/diceContainer"
-        android:layout_width="100dp"
+        android:id="@+id/llPlayerBlue"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:background="@drawable/ic_launcher_background"
-        android:orientation="vertical"
-        android:padding="8dp"
-        android:gravity="center"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="80dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <TextView
+            android:id="@+id/tvPlayer1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Jugador 1"
+            android:textColor="@color/black" />
+        <View
+            android:layout_width="30dp"
+            android:layout_height="15dp"
+            android:layout_marginStart="8dp"
+            android:background="#2196F3" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llPlayerYellow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
+        android:layout_marginEnd="24dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <View
+            android:layout_width="30dp"
+            android:layout_height="15dp"
+            android:layout_marginEnd="8dp"
+            android:background="#FFEB3B" />
+        <TextView
+            android:id="@+id/tvPlayer2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Jugador 2"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <!-- Tablero Real -->
+    <FrameLayout
+        android:id="@+id/boardContainer"
+        android:layout_width="360dp"
+        android:layout_height="360dp"
+        android:layout_marginTop="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/imageViewGameBoard">
+        app:layout_constraintTop_toBottomOf="@id/tvTurn">
 
+        <ImageView
+            android:id="@+id/imageViewGameBoard"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/tablero"
+            android:src="@drawable/parchis" />
+
+        <!-- Aquí se añadirán las fichas programáticamente o por encima -->
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/llPlayerRed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="20dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/boardContainer">
         <TextView
-            android:id="@+id/tvDiceNumber"
+            android:id="@+id/tvPlayer4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=""
-            android:textColor="@color/white"
-            android:textSize="32sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/lanzar_dado"
-            android:textColor="@color/white"
-            android:textSize="10sp"
-            tools:ignore="SmallSp" />
+            android:text="Jugador 4"
+            android:textColor="@color/black" />
+        <View
+            android:layout_width="30dp"
+            android:layout_height="15dp"
+            android:layout_marginStart="8dp"
+            android:background="#F44336" />
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llPlayerGreen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="24dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/boardContainer">
+        <View
+            android:layout_width="30dp"
+            android:layout_height="15dp"
+            android:layout_marginEnd="8dp"
+            android:background="#4CAF50" />
+        <TextView
+            android:id="@+id/tvPlayer3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Jugador 3"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <!-- Dado Contenedor Mejorado -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/diceCard"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="32dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/boardContainer">
+
+        <LinearLayout
+            android:id="@+id/diceActionArea"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/blue"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:id="@+id/tvDiceNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/interrogación"
+                android:textColor="@color/white"
+                android:textSize="40sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/lanzar_dado"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
     <Button
         android:id="@+id/btnAbandon"

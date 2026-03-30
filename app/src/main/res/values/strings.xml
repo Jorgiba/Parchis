@@ -40,4 +40,6 @@
     <string name="crear_cuenta">Crear cuenta</string>
     <string name="no_tienes_cuenta_registrate">¿No tienes cuenta? Regístrate</string>
     <string name="ya_tienes_cuenta_inicia_sesion">¿Ya tienes cuenta? Inicia sesión</string>
+    <string name="historial_de_partidas">Historial de partidas:</string>
+    <string name="interrogación">\?</string>
 </resources>
