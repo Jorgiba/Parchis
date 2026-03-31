@@ -4,26 +4,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.parchis.R
-import com.example.parchis.databinding.FragmentHomeBinding
+import com.example.parchis.databinding.ActivityMainBinding
 import com.example.parchis.viewmodel.MainViewModel
 
-class HomeFragment : Fragment() {
-    private var _binding: FragmentHomeBinding? = null
+class MainFragment : Fragment() {
+    private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding!!
 
-    // Usamos activityViewModels para compartir el estado si fuera necesario con la Activity
     private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        _binding = ActivityMainBinding.inflate(inflater, container, false)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
         return binding.root
@@ -32,22 +30,16 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.btnMenu.setOnClickListener {
-            binding.sideMenu.isVisible = !binding.sideMenu.isVisible
+        binding.btnLogin.setOnClickListener {
+            findNavController().navigate(R.id.action_mainFragment_to_loginFragment)
         }
 
-        binding.btnStartGame.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_gameModeFragment)
+        binding.btnGuest.setOnClickListener {
+            findNavController().navigate(R.id.action_mainFragment_to_gameSettingsFragment)
         }
 
-        binding.btnStats.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_statsFragment)
-            binding.sideMenu.visibility = View.GONE
-        }
-
-        binding.btnLogout.setOnClickListener {
-            // Regresamos al fragmento inicial del grafo
-            findNavController().navigate(R.id.mainFragment)
+        binding.btnRegister.setOnClickListener {
+            findNavController().navigate(R.id.action_mainFragment_to_registerFragment)
         }
     }
 
