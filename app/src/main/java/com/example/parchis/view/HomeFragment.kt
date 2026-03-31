@@ -16,7 +16,6 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    // Usamos activityViewModels para compartir el estado si fuera necesario con la Activity
     private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -46,7 +45,6 @@ class HomeFragment : Fragment() {
         }
 
         binding.btnLogout.setOnClickListener {
-            // Regresamos al fragmento inicial del grafo
             findNavController().navigate(R.id.mainFragment)
         }
     }

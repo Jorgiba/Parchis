@@ -36,7 +36,6 @@ class StatsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Cargamos datos de prueba si no hay sesión para evitar errores visuales
         if (SesionUsuario.usuarioLogueado == null) {
             SesionUsuario.cargarDatosPrueba()
         }
@@ -45,7 +44,6 @@ class StatsFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        // Lógica del Intent Implícito para compartir estadísticas
         binding.btnShareStats.setOnClickListener {
             val victorias = SesionUsuario.usuarioLogueado?.victorias ?: 0
             val sendIntent = Intent().apply {
@@ -57,7 +55,6 @@ class StatsFragment : Fragment() {
             startActivity(shareIntent)
         }
 
-        // Observamos los resultados del ViewModel
         viewModel.statsResult.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is StatsResult.Success -> {

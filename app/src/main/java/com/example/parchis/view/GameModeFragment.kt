@@ -16,11 +16,9 @@ import com.example.parchis.viewmodel.MainViewModel
 
 class GameModeFragment : Fragment() {
 
-    // Binding generado a partir de fragment_game_mode.xml
     private var _binding: FragmentGameModeBinding? = null
     private val binding get() = _binding!!
 
-    // Usamos activityViewModels para compartir el MainViewModel si es necesario
     private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(

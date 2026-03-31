@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import com.example.parchis.R
 import com.example.parchis.databinding.FragmentGameSettingsBinding
 import com.example.parchis.model.DificultadBot
-import com.example.parchis.model.Jugador
 import com.example.parchis.model.ParchisGame
 import com.example.parchis.model.SesionUsuario
 import com.example.parchis.viewmodel.MainViewModel

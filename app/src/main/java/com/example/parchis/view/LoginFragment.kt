@@ -15,7 +15,6 @@ import com.example.parchis.viewmodel.LoginViewModel
 
 class LoginFragment : Fragment() {
 
-    // El objeto de binding se genera automáticamente a partir del nombre del layout XML
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
@@ -25,11 +24,8 @@ class LoginFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // 1. Inflamos la vista usando DataBinding
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
 
-        // 2. Vinculamos el ViewModel y el LifecycleOwner al binding
-        // Esto permite que el XML reaccione a cambios de LiveData si los usas allí
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
@@ -39,7 +35,6 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Observamos los cambios en el resultado del login
         viewModel.loginResult.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is LoginResult.Success -> {
@@ -53,7 +48,6 @@ class LoginFragment : Fragment() {
             }
         }
 
-        // ACCESO A VISTAS: Usamos binding.id_de_la_vista (en camelCase)
         binding.btnBackLogin.setOnClickListener {
             findNavController().popBackStack()
         }
@@ -62,7 +56,6 @@ class LoginFragment : Fragment() {
             val username = binding.etUsernameLogin.text.toString()
             val password = binding.etPasswordLogin.text.toString()
 
-            // Llamamos a la lógica del ViewModel
             viewModel.login(username, password)
         }
 
@@ -75,7 +68,6 @@ class LoginFragment : Fragment() {
         }
     }
 
-    // Es fundamental limpiar el binding al destruir la vista para evitar fugas de memoria
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
