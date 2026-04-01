@@ -35,6 +35,7 @@ class GameFragment : Fragment() {
 
         binding.btnAbandon.setOnClickListener {
             findNavController().popBackStack()
+            findNavController().popBackStack()
         }
 
         binding.diceActionArea.setOnClickListener {

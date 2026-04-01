@@ -47,7 +47,6 @@
             android:backgroundTint="@color/blue"
             android:text="@string/iniciar_partida_como_invitado"
             android:textAllCaps="false"
-            android:onClick="@{() -> viewModel.onStartGameClicked()}"
             app:layout_constraintBottom_toTopOf="@+id/btnLogin"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
