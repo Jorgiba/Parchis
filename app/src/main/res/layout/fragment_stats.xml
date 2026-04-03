@@ -109,18 +109,24 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btnShareStats" />
 
-        <TextView
-            android:id="@+id/tvLastGamesList"
+        <ScrollView
+            android:id="@+id/scrollHistory"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
+            android:layout_height="0dp"
             android:layout_marginTop="16dp"
-            android:textColor="@color/black"
-            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvLastGamesTitle" />
+            app:layout_constraintTop_toBottomOf="@id/tvLastGamesTitle">
+
+            <LinearLayout
+                android:id="@+id/containerHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp" />
+        </ScrollView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
