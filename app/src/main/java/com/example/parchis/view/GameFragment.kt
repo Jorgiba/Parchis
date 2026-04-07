@@ -2,6 +2,7 @@ package com.example.parchis.view
 
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -57,9 +58,47 @@ class GameFragment : Fragment() {
         val jugadoresSeleccionados = ConfiguracionPartida.jugadoresSeleccionados
         if (jugadoresSeleccionados.isNotEmpty()) {
             viewModel.initGame(jugadoresSeleccionados)
+            mostrarNombresJugadores()
         }
 
         crearFichas()
+    }
+
+    private fun mostrarNombresJugadores() {
+        val jugadores = viewModel.getJugadores()
+
+        // Logs para depuración en consola
+        Log.d("ParchisGame", "=== CONFIGURACIÓN DE PARTIDA ===")
+        jugadores.forEach { j ->
+            Log.d("ParchisGame", "Jugador: ${j.nombre} | Color: ${j.color}")
+        }
+
+        // Ocultamos todos inicialmente
+        binding.llPlayerRed.visibility = View.GONE
+        binding.llPlayerBlue.visibility = View.GONE
+        binding.llPlayerGreen.visibility = View.GONE
+        binding.llPlayerYellow.visibility = View.GONE
+
+        jugadores.forEach { jugador ->
+            when (jugador.color) {
+                ColorParchis.ROJO -> {
+                    binding.tvPlayer1.text = jugador.nombre
+                    binding.llPlayerRed.visibility = View.VISIBLE
+                }
+                ColorParchis.AZUL -> {
+                    binding.tvPlayer2.text = jugador.nombre
+                    binding.llPlayerBlue.visibility = View.VISIBLE
+                }
+                ColorParchis.VERDE -> {
+                    binding.tvPlayer4.text = jugador.nombre
+                    binding.llPlayerGreen.visibility = View.VISIBLE
+                }
+                ColorParchis.AMARILLO -> {
+                    binding.tvPlayer3.text = jugador.nombre
+                    binding.llPlayerYellow.visibility = View.VISIBLE
+                }
+            }
+        }
     }
 
     private fun crearFichas() {
@@ -90,7 +129,7 @@ class GameFragment : Fragment() {
 
     private fun actualizarPosicionesFichas() {
         val density = resources.displayMetrics.density
-        val size = (24 * density).toInt()
+        val size = (20 * density).toInt()
         val boardWidth = binding.boardContainer.width.takeIf { it > 0 } ?: (360 * density).toInt()
         val boardHeight = binding.boardContainer.height.takeIf { it > 0 } ?: (360 * density).toInt()
 
@@ -98,13 +137,13 @@ class GameFragment : Fragment() {
             val params = FrameLayout.LayoutParams(size, size)
             if (ficha.estado == EstadoFicha.EN_CASA) {
                 val casaBase = when(ficha.color) {
-                    ColorParchis.ROJO -> Pair(40, 240)
-                    ColorParchis.AZUL -> Pair(40, 40)
-                    ColorParchis.VERDE -> Pair(240, 240)
-                    ColorParchis.AMARILLO -> Pair(240, 40)
+                    ColorParchis.ROJO -> Pair(55, 55)
+                    ColorParchis.AZUL -> Pair(265, 55)
+                    ColorParchis.AMARILLO -> Pair(265, 265)
+                    ColorParchis.VERDE -> Pair(55, 265)
                 }
-                val offsetX = if (ficha.id % 2 == 0) 0 else 35
-                val offsetY = if (ficha.id < 2) 0 else 35
+                val offsetX = if (ficha.id % 2 == 0) 0 else 40
+                val offsetY = if (ficha.id < 2) 0 else 40
                 params.leftMargin = ((casaBase.first + offsetX) * density).toInt()
                 params.topMargin = ((casaBase.second + offsetY) * density).toInt()
             } else {
