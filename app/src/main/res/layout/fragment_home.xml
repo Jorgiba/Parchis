@@ -16,6 +16,9 @@
         android:fitsSystemWindows="true"
         tools:context=".view.HomeFragment">
 
+        <!-- Justificación de Layout: ConstraintLayout para gestionar una interfaz con elementos
+             superpuestos (como el menú lateral) y alineaciones relativas sin anidar vistas. -->
+
         <ImageButton
             android:id="@+id/btnMenu"
             android:layout_width="48dp"
@@ -51,7 +54,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textViewHomeTitle" />
 
-        <!-- Simulación de menú lateral (Oculto por defecto) -->
         <Button
             android:id="@+id/btnStartGame"
             android:layout_width="292dp"
@@ -65,38 +67,50 @@
             app:layout_constraintHorizontal_bias="0.495"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <LinearLayout
+        <!-- Menú lateral mejorado con Material Design -->
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/sideMenu"
-            android:layout_width="150dp"
+            android:layout_width="180dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            android:background="@color/claro"
-            android:orientation="vertical"
-            android:padding="8dp"
             android:visibility="gone"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="12dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btnMenu">
 
-            <Button
-                android:id="@+id/btnStats"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/blue"
-                android:text="@string/estad_sticas"
-                android:textAllCaps="false"
-                android:textSize="12sp" />
+                android:background="@color/claro"
+                android:orientation="vertical"
+                android:padding="12dp">
 
-            <Button
-                android:id="@+id/btnLogout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:backgroundTint="@color/blue"
-                android:text="@string/cerrar_sesi_n"
-                android:textAllCaps="false"
-                android:textSize="12sp" />
-        </LinearLayout>
+                <Button
+                    android:id="@+id/btnStats"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/estad_sticas"
+                    android:textAlignment="viewStart"
+                    android:textAllCaps="false"
+                    app:icon="@drawable/ic_stats" />
+
+                <Button
+                    android:id="@+id/btnLogout"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/cerrar_sesi_n"
+                    android:textAlignment="viewStart"
+                    android:textAllCaps="false"
+                    android:textColor="@color/red"
+                    app:icon="@drawable/ic_logout"
+                    app:iconTint="@color/red" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

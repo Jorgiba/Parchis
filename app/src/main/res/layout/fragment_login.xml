@@ -16,6 +16,9 @@
         android:fitsSystemWindows="true"
         tools:context=".view.LoginFragment">
 
+        <!-- Justificación de Layout: ConstraintLayout para un diseño flexible que permite alinear
+             elementos complejos sin necesidad de anidar múltiples layouts lineales. -->
+
         <ImageButton
             android:id="@+id/btnBackLogin"
             android:layout_width="48dp"
@@ -40,35 +43,48 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <EditText
-            android:id="@+id/etUsernameLogin"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilUsername"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="40dp"
             android:layout_marginTop="60dp"
             android:layout_marginEnd="40dp"
-            android:autofillHints="username"
             android:hint="@string/nombre_de_usuario"
-            android:inputType="textPersonName"
-            android:minHeight="48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textViewLoginTitle" />
+            app:layout_constraintTop_toBottomOf="@id/textViewLoginTitle">
 
-        <EditText
-            android:id="@+id/etPasswordLogin"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etUsernameLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:text="@={viewModel.username}" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPassword"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="40dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="40dp"
-            android:autofillHints="password"
             android:hint="@string/contrase_a"
-            android:inputType="textPassword"
-            android:minHeight="48dp"
+            app:endIconMode="password_toggle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etUsernameLogin" />
+            app:layout_constraintTop_toBottomOf="@id/tilUsername">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPasswordLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:text="@={viewModel.password}" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <Button
             android:id="@+id/btnLoginSubmit"
@@ -76,11 +92,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:backgroundTint="@color/blue"
+            android:onClick="@{() -> viewModel.onLoginClick()}"
             android:text="@string/iniciar_sesi_n"
             android:textAllCaps="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etPasswordLogin" />
+            app:layout_constraintTop_toBottomOf="@id/tilPassword" />
 
         <TextView
             android:id="@+id/btnForgotPassword"
