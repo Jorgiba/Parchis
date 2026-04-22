@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -17,6 +18,7 @@ import com.example.parchis.R
 import com.example.parchis.databinding.FragmentGameBinding
 import com.example.parchis.model.*
 import com.example.parchis.viewmodel.GameViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class GameFragment : Fragment() {
     private var _binding: FragmentGameBinding? = null
@@ -43,17 +45,7 @@ class GameFragment : Fragment() {
         Log.d("Lifecycle", "GameFragment: onViewCreated")
 
         binding.btnAbandon.setOnClickListener {
-            Log.d("Navigation", "Abandon button clicked")
-            val destination = if (SesionUsuario.usuarioLogueado != null) {
-                R.id.homeFragment
-            } else {
-                R.id.mainFragment
-            }
-            
-            val popped = findNavController().popBackStack(destination, false)
-            if (!popped) {
-                findNavController().navigate(destination)
-            }
+            showAbandonDialog()
         }
 
         binding.diceActionArea.setOnClickListener {
@@ -81,6 +73,34 @@ class GameFragment : Fragment() {
         }
 
         crearFichas()
+    }
+
+    private fun showAbandonDialog() {
+        // Implementación de Diálogo Material (Punto 7 y 16 del temario)
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.abandonar_partida)
+            .setMessage("¿Estás seguro de que deseas salir de la partida? Se perderá todo el progreso actual.")
+            .setNegativeButton(R.string.volver) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton(R.string.abandonar_partida) { _, _ ->
+                confirmAbandon()
+            }
+            .show()
+    }
+
+    private fun confirmAbandon() {
+        Log.d("Navigation", "Abandon confirmed")
+        val destination = if (SesionUsuario.usuarioLogueado != null) {
+            R.id.homeFragment
+        } else {
+            R.id.mainFragment
+        }
+        
+        val popped = findNavController().popBackStack(destination, false)
+        if (!popped) {
+            findNavController().navigate(destination)
+        }
     }
 
     private fun mostrarNombresJugadores() {
@@ -142,7 +162,6 @@ class GameFragment : Fragment() {
     }
 
     private fun actualizarPosicionesFichas() {
-        // Ejecutamos en el hilo de UI para asegurar que el binding.boardContainer tenga dimensiones
         binding.boardContainer.post {
             val density = resources.displayMetrics.density
             val size = (20 * density).toInt()
