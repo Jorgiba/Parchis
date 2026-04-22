@@ -8,17 +8,22 @@ import com.example.parchis.model.UsuarioRegistrado
 
 class LoginViewModel : ViewModel() {
 
+    // Variables para DataBinding (Two-way binding)
+    val username = MutableLiveData<String>("")
+    val password = MutableLiveData<String>("")
+
     private val _loginResult = MutableLiveData<LoginResult?>()
     val loginResult: LiveData<LoginResult?> = _loginResult
 
-    fun login(username: String, password: String) {
-        if (username.isNotEmpty() && password.isNotEmpty()) {
-            if (username.equals("Ejemplo", ignoreCase = true)) {
-                // Si es Ejemplo, cargamos sus datos de prueba predefinidos
+    fun onLoginClick() {
+        val userVal = username.value ?: ""
+        val passVal = password.value ?: ""
+        
+        if (userVal.isNotEmpty() && passVal.isNotEmpty()) {
+            if (userVal.equals("Ejemplo", ignoreCase = true)) {
                 SesionUsuario.cargarDatosPrueba()
             } else {
-                // Para cualquier otro usuario, creamos una sesión nueva (vacía)
-                SesionUsuario.usuarioLogueado = UsuarioRegistrado(username)
+                SesionUsuario.usuarioLogueado = UsuarioRegistrado(userVal)
             }
             
             val usuario = SesionUsuario.usuarioLogueado!!
