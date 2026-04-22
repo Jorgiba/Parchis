@@ -8,24 +8,37 @@ import com.example.parchis.model.UsuarioRegistrado
 
 class RegisterViewModel : ViewModel() {
 
+    // Variables para DataBinding bidireccional (Punto 15 y 16 del temario)
+    val username = MutableLiveData<String>("")
+    val email = MutableLiveData<String>("")
+    val password = MutableLiveData<String>("")
+    val confirmPassword = MutableLiveData<String>("")
+
     private val _registerResult = MutableLiveData<RegisterResult?>()
     val registerResult: LiveData<RegisterResult?> = _registerResult
 
-    fun register(username: String, email: String, password: String, confirmPassword: String) {
-        if (username.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+    // Función de orden superior/Lambda aplicada en la lógica (Punto 3)
+    fun onRegisterClick() {
+        val u = username.value ?: ""
+        val e = email.value ?: ""
+        val p = password.value ?: ""
+        val cp = confirmPassword.value ?: ""
+
+        if (u.isEmpty() || e.isEmpty() || p.isEmpty() || cp.isEmpty()) {
             _registerResult.value = RegisterResult.Error("Por favor, rellena todos los campos")
             return
         }
 
-        if (password != confirmPassword) {
+        if (p != cp) {
             _registerResult.value = RegisterResult.Error("Las contraseñas no coinciden")
             return
         }
 
-        val usuario = UsuarioRegistrado(username)
-        // Guardamos la sesión en el singleton
-        SesionUsuario.usuarioLogueado = usuario
-        _registerResult.value = RegisterResult.Success(usuario)
+        // Uso de funciones de contexto (Punto 4)
+        UsuarioRegistrado(u).also { usuario ->
+            SesionUsuario.usuarioLogueado = usuario
+            _registerResult.value = RegisterResult.Success(usuario)
+        }
     }
 
     fun clearRegisterResult() {
