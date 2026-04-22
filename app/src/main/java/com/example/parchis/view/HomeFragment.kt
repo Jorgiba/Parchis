@@ -1,6 +1,7 @@
 package com.example.parchis.view
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,10 +19,16 @@ class HomeFragment : Fragment() {
 
     private val viewModel: MainViewModel by activityViewModels()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.d("Lifecycle", "HomeFragment: onCreate")
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.d("Lifecycle", "HomeFragment: onCreateView")
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
@@ -30,8 +37,10 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("Lifecycle", "HomeFragment: onViewCreated")
 
         binding.btnMenu.setOnClickListener {
+            // Uso de propiedad de extensión .isVisible para mayor legibilidad
             binding.sideMenu.isVisible = !binding.sideMenu.isVisible
         }
 
@@ -45,12 +54,39 @@ class HomeFragment : Fragment() {
         }
 
         binding.btnLogout.setOnClickListener {
+            // Navegación de vuelta al inicio de la app
             findNavController().navigate(R.id.mainFragment)
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        Log.d("Lifecycle", "HomeFragment: onStart")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("Lifecycle", "HomeFragment: onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("Lifecycle", "HomeFragment: onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("Lifecycle", "HomeFragment: onStop")
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        Log.d("Lifecycle", "HomeFragment: onDestroyView")
         _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("Lifecycle", "HomeFragment: onDestroy")
     }
 }
