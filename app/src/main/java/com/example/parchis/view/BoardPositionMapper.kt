@@ -28,12 +28,7 @@ object BoardPositionMapper {
     }
 
     private fun calculateTempCoords(id: Int): Pair<Float, Float> {
-        val angle = Math.toRadians((id * (360.0 / 68.0)))
-        val radius = 0.35f
-        return Pair(
-            0.5f + (radius * Math.cos(angle)).toFloat(),
-            0.5f + (radius * Math.sin(angle)).toFloat()
-        )
+        return Pair(0f, 0f)
     }
 
     fun getPosition(id: Int, boardWidth: Int, boardHeight: Int): Pair<Float, Float> {

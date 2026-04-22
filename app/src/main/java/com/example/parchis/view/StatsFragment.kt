@@ -2,6 +2,7 @@ package com.example.parchis.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.example.parchis.R
 import com.example.parchis.databinding.FragmentStatsBinding
 import com.example.parchis.model.ResultadoPartida
 import com.example.parchis.model.SesionUsuario
@@ -27,10 +29,16 @@ class StatsFragment : Fragment() {
 
     private val viewModel: StatsViewModel by viewModels()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.d("Lifecycle", "StatsFragment: onCreate")
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.d("Lifecycle", "StatsFragment: onCreateView")
         _binding = FragmentStatsBinding.inflate(inflater, container, false)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
@@ -39,6 +47,7 @@ class StatsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("Lifecycle", "StatsFragment: onViewCreated")
 
         if (SesionUsuario.usuarioLogueado == null) {
             SesionUsuario.cargarDatosPrueba()
@@ -50,12 +59,19 @@ class StatsFragment : Fragment() {
 
         binding.btnShareStats.setOnClickListener {
             val victorias = SesionUsuario.usuarioLogueado?.victorias ?: 0
+            val shareText = getString(R.string.share_message, victorias)
+            
+            // Ejemplo de Intent Explícito para abrir una hipotética DetailActivity o similar
+            // val intent = Intent(requireContext(), SettingsActivity::class.java)
+            // startActivity(intent)
+
+            // Intent Implícito (Compartir)
             val sendIntent = Intent().apply {
                 action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, "¡Mira mis estadísticas en el Parchís! He ganado $victorias partidas. ¿Te animas a jugar?")
+                putExtra(Intent.EXTRA_TEXT, shareText)
                 type = "text/plain"
             }
-            val shareIntent = Intent.createChooser(sendIntent, "Compartir mis logros")
+            val shareIntent = Intent.createChooser(sendIntent, getString(R.string.choose_share))
             startActivity(shareIntent)
         }
 
@@ -77,7 +93,7 @@ class StatsFragment : Fragment() {
     private fun mostrarEstadisticas(usuario: UsuarioRegistrado) {
         val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
 
-        // Rellenar cabecera
+        // Rellenar cabecera con strings formateados (evitando hardcoding)
         binding.tvGamesPlayed.text = "Partidas jugadas: ${usuario.partidasJugadas}"
         binding.tvWins.text = "Victorias: ${usuario.victorias}"
         binding.tvLosses.text = "Derrotas: ${usuario.derrotas}"
@@ -110,7 +126,6 @@ class StatsFragment : Fragment() {
 
                 text2.text = "Jugadores: ${partida.jugadores.joinToString(", ")}\nModo: Local"
 
-                // Añadir un pequeño margen entre partidas
                 val params = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
@@ -123,8 +138,34 @@ class StatsFragment : Fragment() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        Log.d("Lifecycle", "StatsFragment: onStart")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("Lifecycle", "StatsFragment: onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("Lifecycle", "StatsFragment: onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("Lifecycle", "StatsFragment: onStop")
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        Log.d("Lifecycle", "StatsFragment: onDestroyView")
         _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("Lifecycle", "StatsFragment: onDestroy")
     }
 }

@@ -16,6 +16,8 @@
         android:fitsSystemWindows="true"
         tools:context=".view.StatsFragment">
 
+        <!-- Justificación de Layout: ConstraintLayout para colocar elementos de forma flexible y responsive -->
+
         <!-- Botón Volver -->
         <ImageButton
             android:id="@+id/btnBackStats"
@@ -24,7 +26,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Volver"
+            android:contentDescription="@string/volver"
             android:src="@drawable/ic_back"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -51,7 +53,8 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textViewStatsTitle" />
+            app:layout_constraintTop_toBottomOf="@id/textViewStatsTitle"
+            tools:text="Partidas jugadas: 10" />
 
         <TextView
             android:id="@+id/tvWins"
@@ -62,7 +65,8 @@
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvGamesPlayed" />
+            app:layout_constraintTop_toBottomOf="@id/tvGamesPlayed"
+            tools:text="Victorias: 5" />
 
         <TextView
             android:id="@+id/tvLosses"
@@ -73,7 +77,8 @@
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvGamesPlayed" />
+            app:layout_constraintTop_toBottomOf="@id/tvGamesPlayed"
+            tools:text="Derrotas: 5" />
 
         <TextView
             android:id="@+id/tvPiecesEaten"
@@ -83,7 +88,8 @@
             android:layout_marginTop="30dp"
             android:textColor="@color/black"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvWins" />
+            app:layout_constraintTop_toBottomOf="@id/tvWins"
+            tools:text="Fichas comidas: 12" />
 
         <!-- Botón de Compartir (Intent Implícito) -->
         <Button
@@ -91,7 +97,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Compartir Logros"
+            android:text="@string/compartir_logros"
             android:backgroundTint="@color/blue"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

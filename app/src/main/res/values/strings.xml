@@ -42,4 +42,13 @@
     <string name="ya_tienes_cuenta_inicia_sesion">¿Ya tienes cuenta? Inicia sesión</string>
     <string name="historial_de_partidas">Historial de partidas:</string>
     <string name="interrogación">\?</string>
+    <string name="volver">Volver</string>
+    <string name="compartir_logros">Compartir Logros</string>
+    <string name="jugador_1">Jugador 1</string>
+    <string name="jugador_2">Jugador 2</string>
+    <string name="jugador_3">Jugador 3</string>
+    <string name="jugador_4">Jugador 4</string>
+    <string name="turno_jugador">Turno del Jugador: %s</string>
+    <string name="share_message">¡Mira mis estadísticas en Parchís! He ganado %1$d partidas.</string>
+    <string name="choose_share">Compartir con...</string>
 </resources>
