@@ -1,6 +1,7 @@
 package com.example.parchis.view
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,10 +20,16 @@ class RegisterFragment : Fragment() {
 
     private val viewModel: RegisterViewModel by viewModels()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.d("Lifecycle", "RegisterFragment: onCreate")
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.d("Lifecycle", "RegisterFragment: onCreateView")
         _binding = FragmentRegisterBinding.inflate(inflater, container, false)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
@@ -31,13 +38,14 @@ class RegisterFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("Lifecycle", "RegisterFragment: onViewCreated")
 
         viewModel.registerResult.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is RegisterResult.Success -> {
                     Toast.makeText(
                         requireContext(),
-                        "Cuenta creada con éxito para ${result.usuario.username}",
+                        getString(R.string.registrarse),
                         Toast.LENGTH_SHORT
                     ).show()
                     findNavController().navigate(R.id.action_registerFragment_to_homeFragment)
@@ -56,22 +64,41 @@ class RegisterFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        binding.btnRegisterSubmit.setOnClickListener {
-            val username = binding.etRegisterUsername.text.toString()
-            val email = binding.etRegisterEmail.text.toString()
-            val password = binding.etRegisterPassword.text.toString()
-            val confirmPassword = binding.etRegisterConfirmPassword.text.toString()
-
-            viewModel.register(username, email, password, confirmPassword)
-        }
+        // El onClick del botón se maneja ahora vía DataBinding en el XML
 
         binding.tvGoToLogin.setOnClickListener {
             findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        Log.d("Lifecycle", "RegisterFragment: onStart")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("Lifecycle", "RegisterFragment: onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("Lifecycle", "RegisterFragment: onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("Lifecycle", "RegisterFragment: onStop")
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        Log.d("Lifecycle", "RegisterFragment: onDestroyView")
         _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("Lifecycle", "RegisterFragment: onDestroy")
     }
 }
