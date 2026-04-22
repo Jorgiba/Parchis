@@ -49,7 +49,7 @@
             android:id="@+id/tvGamesPlayed"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="30dp"
             android:text="@{viewModel.gamesPlayed}"
             android:textColor="@color/black"
             android:textStyle="bold"
@@ -63,7 +63,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="40dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:text="@{viewModel.wins}"
             android:textColor="@color/black"
             android:textStyle="bold"
@@ -75,7 +75,7 @@
             android:id="@+id/tvLosses"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="40dp"
             android:text="@{viewModel.losses}"
             android:textColor="@color/black"
@@ -89,7 +89,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="40dp"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="20dp"
             android:text="@{viewModel.piecesEaten}"
             android:textColor="@color/black"
             app:layout_constraintStart_toStartOf="parent"
@@ -101,7 +101,7 @@
             android:id="@+id/btnShareStats"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="16dp"
             android:text="@string/compartir_logros"
             android:backgroundTint="@color/blue"
             app:layout_constraintEnd_toEndOf="parent"
@@ -113,31 +113,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="40dp"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="20dp"
             android:text="@string/historial_de_partidas"
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btnShareStats" />
 
-        <ScrollView
-            android:id="@+id/scrollHistory"
+        <!-- Mejora: Uso de RecyclerView para el historial de partidas (Normas de la profesora) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvHistory"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="8dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvLastGamesTitle">
-
-            <LinearLayout
-                android:id="@+id/containerHistory"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp" />
-        </ScrollView>
+            app:layout_constraintTop_toBottomOf="@id/tvLastGamesTitle"
+            tools:listitem="@layout/item_partida" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

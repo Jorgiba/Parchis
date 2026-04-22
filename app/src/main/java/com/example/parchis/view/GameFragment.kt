@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -24,7 +25,13 @@ class GameFragment : Fragment() {
     private val viewModel: GameViewModel by viewModels()
     private val fichaViews = mutableMapOf<Ficha, ImageView>()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.d("Lifecycle", "GameFragment: onCreate")
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        Log.d("Lifecycle", "GameFragment: onCreateView")
         _binding = FragmentGameBinding.inflate(inflater, container, false)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
@@ -33,22 +40,34 @@ class GameFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("Lifecycle", "GameFragment: onViewCreated")
 
         binding.btnAbandon.setOnClickListener {
-            findNavController().popBackStack()
-            findNavController().popBackStack()
+            Log.d("Navigation", "Abandon button clicked")
+            val destination = if (SesionUsuario.usuarioLogueado != null) {
+                R.id.homeFragment
+            } else {
+                R.id.mainFragment
+            }
+            
+            val popped = findNavController().popBackStack(destination, false)
+            if (!popped) {
+                findNavController().navigate(destination)
+            }
         }
 
         binding.diceActionArea.setOnClickListener {
             viewModel.lanzarDado()
         }
 
+        // Observamos el LiveData del dado para actualizar la UI
         viewModel.diceResult.observe(viewLifecycleOwner) { result ->
-            binding.tvDiceNumber.text = result?.toString() ?: "?"
+            binding.tvDiceNumber.text = result?.toString() ?: getString(R.string.interrogación)
         }
 
+        // Observamos el turno actual
         viewModel.currentPlayer.observe(viewLifecycleOwner) { jugador ->
-            binding.tvTurn.text = "TURNO DE:\n${jugador.nombre.uppercase()}"
+            binding.tvTurn.text = getString(R.string.turno_jugador, jugador.nombre.uppercase())
         }
 
         viewModel.fichasUpdateEvent.observe(viewLifecycleOwner) {
@@ -66,14 +85,8 @@ class GameFragment : Fragment() {
 
     private fun mostrarNombresJugadores() {
         val jugadores = viewModel.getJugadores()
+        Log.d("ParchisGame", "Configurando partida con ${jugadores.size} jugadores")
 
-        // Logs para depuración en consola
-        Log.d("ParchisGame", "=== CONFIGURACIÓN DE PARTIDA ===")
-        jugadores.forEach { j ->
-            Log.d("ParchisGame", "Jugador: ${j.nombre} | Color: ${j.color}")
-        }
-
-        // Ocultamos todos inicialmente
         binding.llPlayerRed.visibility = View.GONE
         binding.llPlayerBlue.visibility = View.GONE
         binding.llPlayerGreen.visibility = View.GONE
@@ -105,19 +118,20 @@ class GameFragment : Fragment() {
         val players = viewModel.getJugadores()
         players.forEach { jugador ->
             jugador.fichas.forEach { ficha ->
-                val fichaView = ImageView(requireContext())
-                fichaView.setImageResource(R.drawable.ficha_circle)
+                val fichaView = ImageView(requireContext()).apply {
+                    setImageResource(R.drawable.ficha_circle)
+                    
+                    val colorRes = when(ficha.color) {
+                        ColorParchis.ROJO -> android.R.color.holo_red_dark
+                        ColorParchis.AZUL -> android.R.color.holo_blue_dark
+                        ColorParchis.VERDE -> android.R.color.holo_green_dark
+                        ColorParchis.AMARILLO -> android.R.color.holo_orange_light
+                    }
+                    imageTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), colorRes))
 
-                val colorRes = when(ficha.color) {
-                    ColorParchis.ROJO -> android.R.color.holo_red_dark
-                    ColorParchis.AZUL -> android.R.color.holo_blue_dark
-                    ColorParchis.VERDE -> android.R.color.holo_green_dark
-                    ColorParchis.AMARILLO -> android.R.color.holo_orange_light
-                }
-                fichaView.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), colorRes))
-
-                fichaView.setOnClickListener {
-                    viewModel.onFichaClicked(ficha)
+                    setOnClickListener {
+                        viewModel.onFichaClicked(ficha)
+                    }
                 }
 
                 fichaViews[ficha] = fichaView
@@ -128,35 +142,67 @@ class GameFragment : Fragment() {
     }
 
     private fun actualizarPosicionesFichas() {
-        val density = resources.displayMetrics.density
-        val size = (20 * density).toInt()
-        val boardWidth = binding.boardContainer.width.takeIf { it > 0 } ?: (360 * density).toInt()
-        val boardHeight = binding.boardContainer.height.takeIf { it > 0 } ?: (360 * density).toInt()
+        // Ejecutamos en el hilo de UI para asegurar que el binding.boardContainer tenga dimensiones
+        binding.boardContainer.post {
+            val density = resources.displayMetrics.density
+            val size = (20 * density).toInt()
+            val boardWidth = binding.boardContainer.width
+            val boardHeight = binding.boardContainer.height
 
-        fichaViews.forEach { (ficha, view) ->
-            val params = FrameLayout.LayoutParams(size, size)
-            if (ficha.estado == EstadoFicha.EN_CASA) {
-                val casaBase = when(ficha.color) {
-                    ColorParchis.ROJO -> Pair(55, 55)
-                    ColorParchis.AZUL -> Pair(265, 55)
-                    ColorParchis.AMARILLO -> Pair(265, 265)
-                    ColorParchis.VERDE -> Pair(55, 265)
+            if (boardWidth == 0 || boardHeight == 0) return@post
+
+            fichaViews.forEach { (ficha, view) ->
+                view.layoutParams = FrameLayout.LayoutParams(size, size).apply {
+                    if (ficha.estado == EstadoFicha.EN_CASA) {
+                        val casaBase = when(ficha.color) {
+                            ColorParchis.ROJO -> Pair(boardWidth * 0.15f, boardHeight * 0.15f)
+                            ColorParchis.AZUL -> Pair(boardWidth * 0.75f, boardHeight * 0.15f)
+                            ColorParchis.AMARILLO -> Pair(boardWidth * 0.75f, boardHeight * 0.75f)
+                            ColorParchis.VERDE -> Pair(boardWidth * 0.15f, boardHeight * 0.75f)
+                        }
+                        val offsetX = (if (ficha.id % 2 == 0) -15 else 15) * density
+                        val offsetY = (if (ficha.id < 2) -15 else 15) * density
+                        
+                        leftMargin = (casaBase.first + offsetX).toInt()
+                        topMargin = (casaBase.second + offsetY).toInt()
+                    } else {
+                        val coords = BoardPositionMapper.getPosition(ficha.posicion, boardWidth, boardHeight)
+                        leftMargin = (coords.first - size/2).toInt()
+                        topMargin = (coords.second - size/2).toInt()
+                    }
                 }
-                val offsetX = if (ficha.id % 2 == 0) 0 else 40
-                val offsetY = if (ficha.id < 2) 0 else 40
-                params.leftMargin = ((casaBase.first + offsetX) * density).toInt()
-                params.topMargin = ((casaBase.second + offsetY) * density).toInt()
-            } else {
-                val coords = BoardPositionMapper.getPosition(ficha.posicion, boardWidth, boardHeight)
-                params.leftMargin = (coords.first - size/2).toInt()
-                params.topMargin = (coords.second - size/2).toInt()
             }
-            view.layoutParams = params
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("Lifecycle", "GameFragment: onStart")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("Lifecycle", "GameFragment: onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("Lifecycle", "GameFragment: onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("Lifecycle", "GameFragment: onStop")
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        Log.d("Lifecycle", "GameFragment: onDestroyView")
         _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("Lifecycle", "GameFragment: onDestroy")
     }
 }

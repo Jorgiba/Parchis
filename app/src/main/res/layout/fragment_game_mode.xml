@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><layout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
@@ -11,9 +12,11 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FFFFFF"
+        android:background="@color/white"
         android:fitsSystemWindows="true"
         tools:context=".view.GameModeFragment">
+
+        <!-- Justificación de Layout: ConstraintLayout para colocar elementos de forma flexible y responsive -->
 
         <ImageButton
             android:id="@+id/btnBackMode"
@@ -32,8 +35,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
-            android:text="Iniciar partida"
-            android:textColor="#000000"
+            android:text="@string/iniciar_partida"
+            android:textColor="@color/black"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -44,8 +47,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="60dp"
-            android:text="Elige el modo de juego"
-            android:textColor="#000000"
+            android:text="@string/elige_el_modo_de_juego"
+            android:textColor="@color/black"
             android:textSize="24sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -67,8 +70,8 @@
             android:layout_width="180dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
-            android:backgroundTint="#007BFF"
-            android:text="Crear partida local"
+            android:backgroundTint="@color/blue"
+            android:text="@string/crear_partida_local"
             android:textAllCaps="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -79,8 +82,8 @@
             android:layout_width="180dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:backgroundTint="#007BFF"
-            android:text="Crear partida online"
+            android:backgroundTint="@color/blue"
+            android:text="@string/unirse_a_partida"
             android:textAllCaps="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

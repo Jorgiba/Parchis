@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.example.parchis.model.ParchisGame
 import com.example.parchis.model.Jugador
@@ -13,7 +14,7 @@ import kotlinx.coroutines.launch
 
 class GameViewModel : ViewModel() {
 
-    private val _diceResult = MutableLiveData<Int?>()
+    private val _diceResult = MutableLiveData<Int?>(null)
     val diceResult: LiveData<Int?> = _diceResult
 
     private val _currentPlayer = MutableLiveData<Jugador>()
@@ -22,10 +23,17 @@ class GameViewModel : ViewModel() {
     private val _fichasUpdateEvent = MutableLiveData<Unit>()
     val fichasUpdateEvent: LiveData<Unit> = _fichasUpdateEvent
 
+    // Propiedades para DataBinding (Concepto 15)
+    val diceValue: LiveData<String> = _diceResult.map { it?.toString() ?: "?" }
+    
+    val turnText: LiveData<String> = _currentPlayer.map { jugador ->
+        "TURNO DE:\n${jugador?.nombre?.uppercase() ?: ""}"
+    }
+
     private var game: ParchisGame? = null
 
     fun initGame(jugadores: List<Jugador>) {
-        Log.d("ParchisGame", "Iniciando juego con ${jugadores.size} jugadores")
+        Log.d("Lifecycle", "GameViewModel: initGame")
         game = ParchisGame(jugadores)
         _currentPlayer.value = game?.obtenerJugadorActual()
     }
@@ -33,25 +41,17 @@ class GameViewModel : ViewModel() {
     fun getJugadores() = game?.jugadores ?: emptyList()
 
     fun lanzarDado() {
-        if (_diceResult.value != null) {
-            Log.d("ParchisGame", "Dado ya lanzado: ${_diceResult.value}. Esperando movimiento.")
-            return
-        }
+        if (_diceResult.value != null) return
 
-        val gameInstance = game ?: run {
-            Log.e("ParchisGame", "Error: El juego no ha sido inicializado")
-            return
-        }
+        val gameInstance = game ?: return
 
         val result = gameInstance.lanzarDado()
         _diceResult.value = result
-        Log.d("ParchisGame", "Dado lanzado: $result para el jugador ${gameInstance.obtenerJugadorActual().nombre}")
         
         val jugadorActual = gameInstance.obtenerJugadorActual()
         val puedeMoverAlguna = jugadorActual.fichas.any { gameInstance.puedeMoverFicha(it, result) }
         
         if (!puedeMoverAlguna) {
-            Log.d("ParchisGame", "El jugador no puede mover ninguna ficha. Pasando turno en 1s...")
             viewModelScope.launch {
                 delay(1000)
                 finalizarTurno()
@@ -66,13 +66,10 @@ class GameViewModel : ViewModel() {
         if (gameInstance.obtenerJugadorActual().fichas.contains(ficha) && 
             gameInstance.puedeMoverFicha(ficha, dado)) {
             
-            Log.d("ParchisGame", "Moviendo ficha ${ficha.id} de color ${ficha.color}")
             gameInstance.moverFicha(ficha, dado)
             _fichasUpdateEvent.value = Unit
             
             finalizarTurno()
-        } else {
-            Log.d("ParchisGame", "Movimiento no válido para esta ficha")
         }
     }
 
@@ -80,6 +77,10 @@ class GameViewModel : ViewModel() {
         game?.siguienteTurno()
         _diceResult.value = null 
         _currentPlayer.value = game?.obtenerJugadorActual()
-        Log.d("ParchisGame", "Turno finalizado. Nuevo turno para: ${game?.obtenerJugadorActual()?.nombre}")
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("Lifecycle", "GameViewModel: onCleared")
     }
 }
