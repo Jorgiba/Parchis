@@ -94,8 +94,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/estad_sticas"
                     android:textAlignment="viewStart"
-                    android:textAllCaps="false"
-                    app:icon="@drawable/ic_stats" />
+                    android:textAllCaps="false" />
 
                 <Button
                     android:id="@+id/btnLogout"
@@ -106,9 +105,7 @@
                     android:text="@string/cerrar_sesi_n"
                     android:textAlignment="viewStart"
                     android:textAllCaps="false"
-                    android:textColor="@color/red"
-                    app:icon="@drawable/ic_logout"
-                    app:iconTint="@color/red" />
+                    android:textColor="@color/red" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
