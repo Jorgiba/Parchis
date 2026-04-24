@@ -7,45 +7,57 @@ import androidx.lifecycle.viewModelScope
 import com.example.parchis.database.UsuarioDao
 import com.example.parchis.model.SesionUsuario
 import com.example.parchis.model.UsuarioRegistrado
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class LoginViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
 
-    // Variables para DataBinding (Two-way binding)
-    val username = MutableLiveData<String>("")
+    private val auth = FirebaseAuth.getInstance()
+
+    // Cambiamos username por email para Firebase Auth
+    val email = MutableLiveData<String>("")
     val password = MutableLiveData<String>("")
 
     private val _loginResult = MutableLiveData<LoginResult?>()
     val loginResult: LiveData<LoginResult?> = _loginResult
 
     fun onLoginClick() {
-        val userVal = username.value ?: ""
+        val emailVal = email.value ?: ""
         val passVal = password.value ?: ""
         
-        if (userVal.isNotEmpty() && passVal.isNotEmpty()) {
+        if (emailVal.isNotEmpty() && passVal.isNotEmpty()) {
             viewModelScope.launch {
-                if (userVal.equals("Ejemplo", ignoreCase = true)) {
-                    SesionUsuario.cargarDatosPrueba()
-                } else {
-                    var usuario = usuarioDao.obtenerUsuario(userVal)
-                    
-                    if (usuario == null) {
-                        usuario = UsuarioRegistrado(userVal)
-                        usuarioDao.insertarUsuario(usuario)
+                try {
+                    // 1. Intentar inicio de sesión en Firebase
+                    val result = auth.signInWithEmailAndPassword(emailVal, passVal).await()
+                    val firebaseUser = result.user
+
+                    if (firebaseUser != null) {
+                        // 2. Buscar datos del usuario por email en Room
+                        var usuario = usuarioDao.obtenerUsuarioPorEmail(emailVal)
+                        
+                        if (usuario == null) {
+                            // Si el usuario existe en Firebase pero no en Room (ej: cambio de móvil),
+                            // por ahora lo creamos localmente. En el futuro lo bajaríamos de Firestore.
+                            usuario = UsuarioRegistrado(username = emailVal.split("@")[0], email = emailVal)
+                            usuarioDao.insertarUsuario(usuario)
+                        }
+                        
+                        // Cargar historial real desde la base de datos local
+                        val historial = usuarioDao.obtenerHistorial(usuario.username)
+                        usuario.historialPartidas.clear()
+                        usuario.historialPartidas.addAll(historial)
+                        
+                        SesionUsuario.usuarioLogueado = usuario
+                        _loginResult.postValue(LoginResult.Success(usuario))
                     }
-                    
-                    val historial = usuarioDao.obtenerHistorial(userVal)
-                    usuario.historialPartidas.clear()
-                    usuario.historialPartidas.addAll(historial)
-                    
-                    SesionUsuario.usuarioLogueado = usuario
+                } catch (e: Exception) {
+                    _loginResult.postValue(LoginResult.Error("Fallo al iniciar sesión: ${e.message}"))
                 }
-                
-                val usuarioLogueado = SesionUsuario.usuarioLogueado!!
-                _loginResult.postValue(LoginResult.Success(usuarioLogueado))
             }
         } else {
-            _loginResult.value = LoginResult.Error("El usuario y la contraseña no pueden estar vacíos")
+            _loginResult.value = LoginResult.Error("El email y la contraseña no pueden estar vacíos")
         }
     }
 

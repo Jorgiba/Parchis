@@ -7,9 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.parchis.database.UsuarioDao
 import com.example.parchis.model.SesionUsuario
 import com.example.parchis.model.UsuarioRegistrado
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class RegisterViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
+
+    private val auth = FirebaseAuth.getInstance()
 
     // Variables para DataBinding bidireccional
     val username = MutableLiveData<String>("")
@@ -37,17 +41,23 @@ class RegisterViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
         }
 
         viewModelScope.launch {
-            val existente = usuarioDao.obtenerUsuario(u)
-            if (existente != null) {
-                _registerResult.postValue(RegisterResult.Error("El usuario ya existe"))
-                return@launch
-            }
+            try {
+                // 1. Crear usuario en Firebase Auth
+                val result = auth.createUserWithEmailAndPassword(e, p).await()
+                val firebaseUser = result.user
 
-            val nuevoUsuario = UsuarioRegistrado(u)
-            usuarioDao.insertarUsuario(nuevoUsuario)
-            
-            SesionUsuario.usuarioLogueado = nuevoUsuario
-            _registerResult.postValue(RegisterResult.Success(nuevoUsuario))
+                if (firebaseUser != null) {
+                    // 2. Guardar el usuario en la base de datos local (Room) 
+                    // Usamos el email como identificador o el UID de Firebase
+                    val nuevoUsuario = UsuarioRegistrado(u) // Mantenemos el nombre de usuario elegido
+                    usuarioDao.insertarUsuario(nuevoUsuario)
+                    
+                    SesionUsuario.usuarioLogueado = nuevoUsuario
+                    _registerResult.postValue(RegisterResult.Success(nuevoUsuario))
+                }
+            } catch (ex: Exception) {
+                _registerResult.postValue(RegisterResult.Error("Error al registrar: ${ex.message}"))
+            }
         }
     }
 

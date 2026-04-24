@@ -16,9 +16,6 @@
         android:fitsSystemWindows="true"
         tools:context=".view.LoginFragment">
 
-        <!-- Justificación de Layout: ConstraintLayout para un diseño flexible que permite alinear
-             elementos complejos sin necesidad de anidar múltiples layouts lineales. -->
-
         <ImageButton
             android:id="@+id/btnBackLogin"
             android:layout_width="48dp"
@@ -44,24 +41,24 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilUsername"
+            android:id="@+id/tilEmail"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="40dp"
             android:layout_marginTop="60dp"
             android:layout_marginEnd="40dp"
-            android:hint="@string/nombre_de_usuario"
+            android:hint="Correo electrónico"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textViewLoginTitle">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etUsernameLogin"
+                android:id="@+id/etEmailLogin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textPersonName"
-                android:text="@={viewModel.username}" />
+                android:inputType="textEmailAddress"
+                android:text="@={viewModel.email}" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -76,7 +73,7 @@
             app:endIconMode="password_toggle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tilUsername">
+            app:layout_constraintTop_toBottomOf="@id/tilEmail">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPasswordLogin"
