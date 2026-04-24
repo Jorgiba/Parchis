@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:name=".ParchisApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -21,11 +22,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".view.AboutActivity"
-            android:exported="false"
-            android:label="Acerca de"
-            android:theme="@style/Theme.MaterialComponents.Light.Dialog" />
 
     </application>
 

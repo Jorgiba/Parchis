@@ -9,17 +9,21 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.example.parchis.ParchisApplication
 import com.example.parchis.R
 import com.example.parchis.databinding.FragmentLoginBinding
 import com.example.parchis.viewmodel.LoginResult
 import com.example.parchis.viewmodel.LoginViewModel
+import com.example.parchis.viewmodel.ViewModelFactory
 
 class LoginFragment : Fragment() {
 
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: LoginViewModel by viewModels()
+    private val viewModel: LoginViewModel by viewModels {
+        ViewModelFactory((requireActivity().application as ParchisApplication).database.usuarioDao())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,9 +62,6 @@ class LoginFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        // El onClick del botón se maneja ahora vía DataBinding en el XML,
-        // pero mantenemos los listeners manuales si fuera necesario para otros eventos.
-
         binding.btnGoToRegister.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
@@ -70,34 +71,8 @@ class LoginFragment : Fragment() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        Log.d("Lifecycle", "LoginFragment: onStart")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d("Lifecycle", "LoginFragment: onResume")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d("Lifecycle", "LoginFragment: onPause")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d("Lifecycle", "LoginFragment: onStop")
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
-        Log.d("Lifecycle", "LoginFragment: onDestroyView")
         _binding = null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("Lifecycle", "LoginFragment: onDestroy")
     }
 }

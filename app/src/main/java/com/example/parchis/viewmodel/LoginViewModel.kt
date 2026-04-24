@@ -3,10 +3,13 @@ package com.example.parchis.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.parchis.database.UsuarioDao
 import com.example.parchis.model.SesionUsuario
 import com.example.parchis.model.UsuarioRegistrado
+import kotlinx.coroutines.launch
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
 
     // Variables para DataBinding (Two-way binding)
     val username = MutableLiveData<String>("")
@@ -20,14 +23,27 @@ class LoginViewModel : ViewModel() {
         val passVal = password.value ?: ""
         
         if (userVal.isNotEmpty() && passVal.isNotEmpty()) {
-            if (userVal.equals("Ejemplo", ignoreCase = true)) {
-                SesionUsuario.cargarDatosPrueba()
-            } else {
-                SesionUsuario.usuarioLogueado = UsuarioRegistrado(userVal)
+            viewModelScope.launch {
+                if (userVal.equals("Ejemplo", ignoreCase = true)) {
+                    SesionUsuario.cargarDatosPrueba()
+                } else {
+                    var usuario = usuarioDao.obtenerUsuario(userVal)
+                    
+                    if (usuario == null) {
+                        usuario = UsuarioRegistrado(userVal)
+                        usuarioDao.insertarUsuario(usuario)
+                    }
+                    
+                    val historial = usuarioDao.obtenerHistorial(userVal)
+                    usuario.historialPartidas.clear()
+                    usuario.historialPartidas.addAll(historial)
+                    
+                    SesionUsuario.usuarioLogueado = usuario
+                }
+                
+                val usuarioLogueado = SesionUsuario.usuarioLogueado!!
+                _loginResult.postValue(LoginResult.Success(usuarioLogueado))
             }
-            
-            val usuario = SesionUsuario.usuarioLogueado!!
-            _loginResult.value = LoginResult.Success(usuario)
         } else {
             _loginResult.value = LoginResult.Error("El usuario y la contraseña no pueden estar vacíos")
         }

@@ -9,16 +9,20 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.example.parchis.ParchisApplication
 import com.example.parchis.R
 import com.example.parchis.databinding.FragmentRegisterBinding
 import com.example.parchis.viewmodel.RegisterResult
 import com.example.parchis.viewmodel.RegisterViewModel
+import com.example.parchis.viewmodel.ViewModelFactory
 
 class RegisterFragment : Fragment() {
     private var _binding: FragmentRegisterBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: RegisterViewModel by viewModels()
+    private val viewModel: RegisterViewModel by viewModels {
+        ViewModelFactory((requireActivity().application as ParchisApplication).database.usuarioDao())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,41 +68,13 @@ class RegisterFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        // El onClick del botón se maneja ahora vía DataBinding en el XML
-
         binding.tvGoToLogin.setOnClickListener {
             findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        Log.d("Lifecycle", "RegisterFragment: onStart")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d("Lifecycle", "RegisterFragment: onResume")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d("Lifecycle", "RegisterFragment: onPause")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d("Lifecycle", "RegisterFragment: onStop")
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
-        Log.d("Lifecycle", "RegisterFragment: onDestroyView")
         _binding = null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("Lifecycle", "RegisterFragment: onDestroy")
     }
 }

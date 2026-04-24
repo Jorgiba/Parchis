@@ -3,12 +3,15 @@ package com.example.parchis.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.parchis.database.UsuarioDao
 import com.example.parchis.model.SesionUsuario
 import com.example.parchis.model.UsuarioRegistrado
+import kotlinx.coroutines.launch
 
-class RegisterViewModel : ViewModel() {
+class RegisterViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
 
-    // Variables para DataBinding bidireccional (Punto 15 y 16 del temario)
+    // Variables para DataBinding bidireccional
     val username = MutableLiveData<String>("")
     val email = MutableLiveData<String>("")
     val password = MutableLiveData<String>("")
@@ -17,7 +20,6 @@ class RegisterViewModel : ViewModel() {
     private val _registerResult = MutableLiveData<RegisterResult?>()
     val registerResult: LiveData<RegisterResult?> = _registerResult
 
-    // Función de orden superior/Lambda aplicada en la lógica (Punto 3)
     fun onRegisterClick() {
         val u = username.value ?: ""
         val e = email.value ?: ""
@@ -34,10 +36,18 @@ class RegisterViewModel : ViewModel() {
             return
         }
 
-        // Uso de funciones de contexto (Punto 4)
-        UsuarioRegistrado(u).also { usuario ->
-            SesionUsuario.usuarioLogueado = usuario
-            _registerResult.value = RegisterResult.Success(usuario)
+        viewModelScope.launch {
+            val existente = usuarioDao.obtenerUsuario(u)
+            if (existente != null) {
+                _registerResult.postValue(RegisterResult.Error("El usuario ya existe"))
+                return@launch
+            }
+
+            val nuevoUsuario = UsuarioRegistrado(u)
+            usuarioDao.insertarUsuario(nuevoUsuario)
+            
+            SesionUsuario.usuarioLogueado = nuevoUsuario
+            _registerResult.postValue(RegisterResult.Success(nuevoUsuario))
         }
     }
 

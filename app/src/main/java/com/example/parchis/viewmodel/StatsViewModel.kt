@@ -4,10 +4,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
+import com.example.parchis.database.UsuarioDao
 import com.example.parchis.model.SesionUsuario
 import com.example.parchis.model.UsuarioRegistrado
+import kotlinx.coroutines.launch
 
-class StatsViewModel : ViewModel() {
+class StatsViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
 
     private val _statsResult = MutableLiveData<StatsResult?>()
     val statsResult: LiveData<StatsResult?> = _statsResult
@@ -32,7 +35,18 @@ class StatsViewModel : ViewModel() {
     fun loadUserStats() {
         val usuario = SesionUsuario.usuarioLogueado
         if (usuario != null) {
-            _statsResult.value = StatsResult.Success(usuario)
+            viewModelScope.launch {
+                // Actualizar los datos del usuario desde la base de datos para asegurar que están al día
+                val usuarioActualizado = usuarioDao.obtenerUsuario(usuario.username)
+                if (usuarioActualizado != null) {
+                    val historial = usuarioDao.obtenerHistorial(usuario.username)
+                    usuarioActualizado.historialPartidas.clear()
+                    usuarioActualizado.historialPartidas.addAll(historial)
+                    _statsResult.postValue(StatsResult.Success(usuarioActualizado))
+                } else {
+                    _statsResult.postValue(StatsResult.Success(usuario))
+                }
+            }
         } else {
             _statsResult.value = StatsResult.Error("No hay ningún usuario con sesión iniciada")
         }

@@ -1,19 +1,25 @@
 package com.example.parchis.model
 
-abstract class Usuario(
-    val username: String? = null
-) {
+import androidx.room.Entity
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
+
+abstract class Usuario {
     abstract fun esRegistrado(): Boolean
 }
 
-class UsuarioRegistrado(
-    username: String,
+@Entity(tableName = "usuarios")
+data class UsuarioRegistrado(
+    @PrimaryKey val username: String,
     var partidasJugadas: Int = 0,
     var victorias: Int = 0,
     var derrotas: Int = 0,
-    var fichasComidas: Int = 0,
-    val historialPartidas: MutableList<Partida> = mutableListOf()
-) : Usuario(username) {
+    var fichasComidas: Int = 0
+) : Usuario() {
+    
+    @Ignore
+    var historialPartidas: MutableList<Partida> = mutableListOf()
+
     override fun esRegistrado() = true
 
     fun agregarPartidaAlHistorial(partida: Partida) {
