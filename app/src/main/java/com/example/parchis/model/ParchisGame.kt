@@ -108,69 +108,40 @@ class ParchisGame(
         ficha.posicion = posActual
     }
 
-    // --- LÓGICA DE BOTS ---
+    // --- MÉTODOS PARA IA (BOTS) ---
 
-    fun decidirMovimientoBot(bot: Bot, dado: Int): Ficha? {
-        val fichasMovibles = bot.fichas.filter { puedeMoverFicha(it, dado) }
-        if (fichasMovibles.isEmpty()) return null
-
-        return when (bot.dificultad) {
-            DificultadBot.FACIL -> decidirFacil(fichasMovibles)
-            DificultadBot.MEDIA -> decidirMedia(fichasMovibles, dado)
-            DificultadBot.DIFICIL -> decidirDificil(fichasMovibles, dado)
-        }
-    }
-
-    private fun decidirFacil(fichas: List<Ficha>): Ficha {
-        return fichas.random()
-    }
-
-    private fun decidirMedia(fichas: List<Ficha>, dado: Int): Ficha {
-        if (dado == 5) {
-            val fichaEnCasa = fichas.find { it.estado == EstadoFicha.EN_CASA }
-            if (fichaEnCasa != null) return fichaEnCasa
-        }
-
-        val enPasilloMeta = fichas.filter { it.estado == EstadoFicha.EN_META }
-        if (enPasilloMeta.isNotEmpty()) {
-            return enPasilloMeta.maxByOrNull { it.posicion % 100 }!!
-        }
-
-        return fichas.maxByOrNull { it.posicion } ?: fichas.random()
-    }
-
-    private fun decidirDificil(fichas: List<Ficha>, dado: Int): Ficha {
-        for (ficha in fichas) {
-            val posicionDestino = simularDestino(ficha, dado)
-            if (hayFichaEnemiga(posicionDestino, ficha.color)) {
-                return ficha
-            }
-        }
-
-        val paraEntrarMeta = fichas.find { it.estado == EstadoFicha.EN_META && (it.posicion % 100) + dado == 8 }
-        if (paraEntrarMeta != null) return paraEntrarMeta
-
-        if (dado == 5) {
-            val fichaEnCasa = fichas.find { it.estado == EstadoFicha.EN_CASA }
-            if (fichaEnCasa != null) return fichaEnCasa
-        }
-
-        return decidirMedia(fichas, dado)
-    }
-
-    private fun simularDestino(ficha: Ficha, pasos: Int): Int {
+    /**
+     * Calcula en qué posición quedaría una ficha sin moverla realmente.
+     */
+    fun simularDestino(ficha: Ficha, pasos: Int): Int {
         var pos = ficha.posicion
         if (ficha.estado == EstadoFicha.EN_CASA) return Tablero.SALIDAS[ficha.color] ?: 0
         
         for (i in 1..pasos) {
-            if (pos == Tablero.ENTRADAS_PASILLO[ficha.color]) return 100
+            if (pos == Tablero.ENTRADAS_PASILLO[ficha.color]) {
+                return when (ficha.color) {
+                    ColorParchis.ROJO -> 100 + (pasos - i + 1)
+                    ColorParchis.AZUL -> 200 + (pasos - i + 1)
+                    ColorParchis.VERDE -> 300 + (pasos - i + 1)
+                    ColorParchis.AMARILLO -> 400 + (pasos - i + 1)
+                }
+            }
             pos++
             if (pos > 68) pos = 1
         }
         return pos
     }
 
-    private fun hayFichaEnemiga(posicion: Int, miColor: ColorParchis): Boolean {
-        return false
+    /**
+     * Comprueba si hay una ficha de otro color en esa posición (y si es vulnerable).
+     */
+    fun hayFichaEnemiga(posicion: Int, miColor: ColorParchis): Boolean {
+        // En los seguros no se puede comer
+        if (Tablero.SEGUROS.contains(posicion)) return false
+        
+        // Buscamos en todos los jugadores si alguien tiene una ficha en esa posición
+        return jugadores.any { jugador -> 
+            jugador.color != miColor && jugador.fichas.any { it.posicion == posicion }
+        }
     }
 }

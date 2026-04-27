@@ -37,9 +37,13 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
     private var game: ParchisGame? = null
 
     fun initGame(jugadores: List<Jugador>) {
-        Log.d("Lifecycle", "GameViewModel: initGame")
+        Log.d("ParchisGame", "--------------------------------------")
+        Log.d("ParchisGame", "🎮 INICIANDO NUEVA PARTIDA")
         game = ParchisGame(jugadores)
-        _currentPlayer.value = game?.obtenerJugadorActual()
+        val inicial = game?.obtenerJugadorActual()
+        Log.d("ParchisGame", "👤 Primer turno para: ${inicial?.nombre} (${inicial?.color})")
+        _currentPlayer.value = inicial
+        verificarTurnoBot()
     }
 
     fun getJugadores() = game?.jugadores ?: emptyList()
@@ -48,14 +52,55 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
         if (_diceResult.value != null || _gameFinished.value != null) return
 
         val gameInstance = game ?: return
-
         val result = gameInstance.lanzarDado()
         _diceResult.value = result
         
         val jugadorActual = gameInstance.obtenerJugadorActual()
+        Log.d("ParchisGame", "🎲 ${jugadorActual.nombre} ha sacado un $result")
+        
         val puedeMoverAlguna = jugadorActual.fichas.any { gameInstance.puedeMoverFicha(it, result) }
         
         if (!puedeMoverAlguna) {
+            Log.d("ParchisGame", "🚫 ${jugadorActual.nombre} no tiene movimientos posibles.")
+            viewModelScope.launch {
+                delay(1500) // Pausa para que el humano vea el "bloqueo"
+                finalizarTurno()
+            }
+        } else if (jugadorActual is Bot) {
+            viewModelScope.launch {
+                delay(2000) // Tiempo de "reflexión" del bot tras ver el dado
+                ejecutarMovimientoBot(jugadorActual, result)
+            }
+        }
+    }
+
+    private fun ejecutarMovimientoBot(bot: Bot, dado: Int) {
+        val gameInstance = game ?: return
+        val fichaAElegir = BotStrategy.decidirMovimiento(bot, dado, gameInstance)
+        
+        fichaAElegir?.let { ficha ->
+            Log.d("ParchisGame", "🤖 El Bot elige mover la ficha ID: ${ficha.id}")
+            
+            // Realizamos el movimiento manualmente para controlar el tiempo del turno
+            val posAnterior = if (ficha.estado == EstadoFicha.EN_CASA) "CASA" else ficha.posicion.toString()
+            gameInstance.moverFicha(ficha, dado)
+            val posNueva = if (ficha.estado == EstadoFicha.FINALIZADA) "META" else ficha.posicion.toString()
+            Log.d("ParchisGame", "🏃 Bot mueve ficha ${ficha.id}: $posAnterior -> $posNueva")
+            
+            _fichasUpdateEvent.value = Unit
+            
+            viewModelScope.launch {
+                delay(1500) // Pausa para que el humano vea dónde ha quedado la ficha del bot
+                
+                if (gameInstance.obtenerJugadorActual().fichas.all { it.estado == EstadoFicha.FINALIZADA }) {
+                    Log.d("ParchisGame", "🏆 ¡PARTIDA FINALIZADA! Ganador: ${bot.nombre}")
+                    gestionarFinPartida(bot)
+                } else {
+                    finalizarTurno()
+                }
+            }
+        } ?: run {
+            Log.d("ParchisGame", "⚠️ El Bot no pudo elegir ficha")
             viewModelScope.launch {
                 delay(1000)
                 finalizarTurno()
@@ -63,19 +108,36 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
         }
     }
 
+    private fun verificarTurnoBot() {
+        val jugadorActual = game?.obtenerJugadorActual()
+        if (jugadorActual is Bot && _gameFinished.value == null) {
+            viewModelScope.launch {
+                delay(2000) // Pausa al empezar el turno del bot
+                lanzarDado()
+            }
+        }
+    }
+
     fun onFichaClicked(ficha: Ficha) {
         val dado = _diceResult.value ?: return
         val gameInstance = game ?: return
+        val jugadorActual = gameInstance.obtenerJugadorActual()
 
-        if (gameInstance.obtenerJugadorActual().fichas.contains(ficha) && 
+        // Solo permitir clicks manuales si es turno de humano
+        if (jugadorActual is Bot) return
+
+        if (jugadorActual.fichas.contains(ficha) && 
             gameInstance.puedeMoverFicha(ficha, dado)) {
             
+            val posAnterior = if (ficha.estado == EstadoFicha.EN_CASA) "CASA" else ficha.posicion.toString()
             gameInstance.moverFicha(ficha, dado)
+            Log.d("ParchisGame", "🏃 ${jugadorActual.nombre} mueve ficha ${ficha.id}: $posAnterior -> ${ficha.posicion}")
+            
             _fichasUpdateEvent.value = Unit
             
-            // Verificar si el jugador ha ganado
             if (gameInstance.obtenerJugadorActual().fichas.all { it.estado == EstadoFicha.FINALIZADA }) {
-                gestionarFinPartida(gameInstance.obtenerJugadorActual())
+                Log.d("ParchisGame", "🏆 ¡PARTIDA FINALIZADA! Ganador: ${jugadorActual.nombre}")
+                gestionarFinPartida(jugadorActual)
             } else {
                 finalizarTurno()
             }
@@ -84,12 +146,10 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
 
     private fun gestionarFinPartida(ganador: Jugador) {
         _gameFinished.value = ganador
-        
         val usuario = SesionUsuario.usuarioLogueado ?: return
         
         viewModelScope.launch {
             val resultado = if (ganador.nombre == usuario.username) ResultadoPartida.VICTORIA else ResultadoPartida.DERROTA
-            
             val nuevaPartida = Partida(
                 id = UUID.randomUUID().toString(),
                 fecha = Date(),
@@ -97,22 +157,17 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
                 jugadores = game?.jugadores?.map { it.nombre } ?: emptyList(),
                 usernameUsuario = usuario.username
             )
-            
-            // Guardar partida y actualizar usuario en DB
             usuarioDao.insertarPartida(nuevaPartida)
-            
-            val usuarioDb = usuarioDao.obtenerUsuario(usuario.username)
-            usuarioDb?.let {
-                it.agregarPartidaAlHistorial(nuevaPartida)
-                usuarioDao.actualizarUsuario(it)
-                SesionUsuario.usuarioLogueado = it
-            }
+            Log.d("ParchisGame", "💾 Partida guardada")
         }
     }
 
     private fun finalizarTurno() {
         game?.siguienteTurno()
         _diceResult.value = null 
-        _currentPlayer.value = game?.obtenerJugadorActual()
+        val nuevoJugador = game?.obtenerJugadorActual()
+        _currentPlayer.value = nuevoJugador
+        Log.d("ParchisGame", "🔄 Cambio de turno -> Ahora: ${nuevoJugador?.nombre}")
+        verificarTurnoBot()
     }
 }

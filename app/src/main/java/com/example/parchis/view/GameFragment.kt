@@ -9,22 +9,27 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.FrameLayout
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.example.parchis.ParchisApplication
 import com.example.parchis.R
 import com.example.parchis.databinding.FragmentGameBinding
 import com.example.parchis.model.*
 import com.example.parchis.viewmodel.GameViewModel
+import com.example.parchis.viewmodel.ViewModelFactory
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class GameFragment : Fragment() {
     private var _binding: FragmentGameBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: GameViewModel by viewModels()
+    // CORRECCIÓN: Usar la factoría para pasar el DAO al ViewModel
+    private val viewModel: GameViewModel by viewModels {
+        ViewModelFactory((requireActivity().application as ParchisApplication).database.usuarioDao())
+    }
+    
     private val fichaViews = mutableMapOf<Ficha, ImageView>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,18 +57,29 @@ class GameFragment : Fragment() {
             viewModel.lanzarDado()
         }
 
-        // Observamos el LiveData del dado para actualizar la UI
         viewModel.diceResult.observe(viewLifecycleOwner) { result ->
             binding.tvDiceNumber.text = result?.toString() ?: getString(R.string.interrogación)
         }
 
-        // Observamos el turno actual
         viewModel.currentPlayer.observe(viewLifecycleOwner) { jugador ->
             binding.tvTurn.text = getString(R.string.turno_jugador, jugador.nombre.uppercase())
         }
 
         viewModel.fichasUpdateEvent.observe(viewLifecycleOwner) {
             actualizarPosicionesFichas()
+        }
+
+        viewModel.gameFinished.observe(viewLifecycleOwner) { ganador ->
+            ganador?.let {
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("¡Partida Finalizada!")
+                    .setMessage("El ganador es: ${it.nombre}")
+                    .setPositiveButton("Ir al inicio") { _, _ ->
+                        confirmAbandon()
+                    }
+                    .setCancelable(false)
+                    .show()
+            }
         }
 
         val jugadoresSeleccionados = ConfiguracionPartida.jugadoresSeleccionados
@@ -76,7 +92,6 @@ class GameFragment : Fragment() {
     }
 
     private fun showAbandonDialog() {
-        // Implementación de Diálogo Material (Punto 7 y 16 del temario)
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.abandonar_partida)
             .setMessage("¿Estás seguro de que deseas salir de la partida? Se perderá todo el progreso actual.")
@@ -90,23 +105,16 @@ class GameFragment : Fragment() {
     }
 
     private fun confirmAbandon() {
-        Log.d("Navigation", "Abandon confirmed")
         val destination = if (SesionUsuario.usuarioLogueado != null) {
             R.id.homeFragment
         } else {
             R.id.mainFragment
         }
-        
-        val popped = findNavController().popBackStack(destination, false)
-        if (!popped) {
-            findNavController().navigate(destination)
-        }
+        findNavController().popBackStack(destination, false)
     }
 
     private fun mostrarNombresJugadores() {
         val jugadores = viewModel.getJugadores()
-        Log.d("ParchisGame", "Configurando partida con ${jugadores.size} jugadores")
-
         binding.llPlayerRed.visibility = View.GONE
         binding.llPlayerBlue.visibility = View.GONE
         binding.llPlayerGreen.visibility = View.GONE
@@ -140,7 +148,6 @@ class GameFragment : Fragment() {
             jugador.fichas.forEach { ficha ->
                 val fichaView = ImageView(requireContext()).apply {
                     setImageResource(R.drawable.ficha_circle)
-                    
                     val colorRes = when(ficha.color) {
                         ColorParchis.ROJO -> android.R.color.holo_red_dark
                         ColorParchis.AZUL -> android.R.color.holo_blue_dark
@@ -148,12 +155,8 @@ class GameFragment : Fragment() {
                         ColorParchis.AMARILLO -> android.R.color.holo_orange_light
                     }
                     imageTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), colorRes))
-
-                    setOnClickListener {
-                        viewModel.onFichaClicked(ficha)
-                    }
+                    setOnClickListener { viewModel.onFichaClicked(ficha) }
                 }
-
                 fichaViews[ficha] = fichaView
                 binding.boardContainer.addView(fichaView)
             }
@@ -181,7 +184,6 @@ class GameFragment : Fragment() {
                         }
                         val offsetX = (if (ficha.id % 2 == 0) -15 else 15) * density
                         val offsetY = (if (ficha.id < 2) -15 else 15) * density
-                        
                         leftMargin = (casaBase.first + offsetX).toInt()
                         topMargin = (casaBase.second + offsetY).toInt()
                     } else {
@@ -194,34 +196,8 @@ class GameFragment : Fragment() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        Log.d("Lifecycle", "GameFragment: onStart")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d("Lifecycle", "GameFragment: onResume")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d("Lifecycle", "GameFragment: onPause")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d("Lifecycle", "GameFragment: onStop")
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
-        Log.d("Lifecycle", "GameFragment: onDestroyView")
         _binding = null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("Lifecycle", "GameFragment: onDestroy")
     }
 }
