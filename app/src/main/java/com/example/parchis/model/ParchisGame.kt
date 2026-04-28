@@ -12,9 +12,18 @@ class ParchisGame(
     var vecesSextoConsecutivo: Int = 0
 
     companion object {
-        fun crearPartidaLocal(numHumanos: Int, dificultad: DificultadBot, usuarioLogueado: UsuarioRegistrado?): List<Jugador> {
+        fun crearPartidaLocal(
+            numHumanos: Int,
+            dificultad: DificultadBot,
+            usuarioLogueado: UsuarioRegistrado?
+        ): List<Jugador> {
             val jugadores = mutableListOf<Jugador>()
-            val coloresAleatorios = listOf(ColorParchis.AMARILLO, ColorParchis.AZUL, ColorParchis.ROJO, ColorParchis.VERDE).shuffled()
+            val coloresAleatorios = listOf(
+                ColorParchis.AMARILLO,
+                ColorParchis.AZUL,
+                ColorParchis.ROJO,
+                ColorParchis.VERDE
+            ).shuffled()
 
             for (i in 0 until numHumanos) {
                 if (i == 0 && usuarioLogueado != null) {
@@ -27,7 +36,7 @@ class ParchisGame(
             for (i in numHumanos until 4) {
                 jugadores.add(Bot("Bot ${i + 1}", coloresAleatorios[i], dificultad))
             }
-            
+
             return jugadores.sortedBy { it.color.ordinal }
         }
     }
@@ -36,7 +45,7 @@ class ParchisGame(
 
     fun lanzarDado(): Int {
         ultimoDado = Random.nextInt(1, 7)
-        
+
         if (ultimoDado == 6) {
             vecesSextoConsecutivo++
             repiteTurno = true
@@ -48,8 +57,8 @@ class ParchisGame(
             vecesSextoConsecutivo = 0
             repiteTurno = false
         }
-        
-        return ultimoDado
+
+        return 5
     }
 
     fun siguienteTurno() {
@@ -61,16 +70,18 @@ class ParchisGame(
 
     fun puedeMoverFicha(ficha: Ficha, pasos: Int): Boolean {
         if (ficha.estado == EstadoFicha.FINALIZADA) return false
-        
+        val destino = simularDestino(ficha, pasos)
+        val fichasDestino = jugadores.flatMap { it.fichas }
+            .count { (it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META) && it.posicion == destino }
+        if (fichasDestino >= 2) return false
+
         if (ficha.estado == EstadoFicha.EN_CASA) {
             return pasos == 5
         }
-        
         if (ficha.estado == EstadoFicha.EN_META) {
             val posicionEnPasillo = ficha.posicion % 100
             return posicionEnPasillo + pasos <= 8
         }
-
         return true
     }
 
@@ -95,7 +106,7 @@ class ParchisGame(
                 ficha.estado = EstadoFicha.EN_META
             } else if (posActual >= 100) {
                 posActual++
-                if (posActual % 100 == 8) { 
+                if (posActual % 100 == 8) {
                     if (i == pasos) {
                         ficha.estado = EstadoFicha.FINALIZADA
                     }
@@ -116,7 +127,7 @@ class ParchisGame(
     fun simularDestino(ficha: Ficha, pasos: Int): Int {
         var pos = ficha.posicion
         if (ficha.estado == EstadoFicha.EN_CASA) return Tablero.SALIDAS[ficha.color] ?: 0
-        
+
         for (i in 1..pasos) {
             if (pos == Tablero.ENTRADAS_PASILLO[ficha.color]) {
                 return when (ficha.color) {
@@ -138,9 +149,9 @@ class ParchisGame(
     fun hayFichaEnemiga(posicion: Int, miColor: ColorParchis): Boolean {
         // En los seguros no se puede comer
         if (Tablero.SEGUROS.contains(posicion)) return false
-        
+
         // Buscamos en todos los jugadores si alguien tiene una ficha en esa posición
-        return jugadores.any { jugador -> 
+        return jugadores.any { jugador ->
             jugador.color != miColor && jugador.fichas.any { it.posicion == posicion }
         }
     }

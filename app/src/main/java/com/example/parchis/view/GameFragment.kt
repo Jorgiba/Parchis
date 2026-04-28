@@ -181,6 +181,10 @@ class GameFragment : Fragment() {
         val density = resources.displayMetrics.density
         val fichaSize = (15 * density).toInt()
 
+        val fichasEnTablero = fichaViews.keys
+            .filter { it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META }
+            .groupBy { it.posicion }
+
         // Posiciones dentro de cada casa para las 4 fichas (2x2 grid)
         // Los offsets están en porcentaje del tamaño del tablero para escalar con él
         // Las casas ocupan ~27% del tablero en cada esquina
@@ -217,8 +221,51 @@ class GameFragment : Fragment() {
                 val coords = BoardPositionMapper.getPosition(
                     ficha.posicion, boardWidth, boardHeight
                 )
-                params.leftMargin = (coords.first  - fichaSize / 2f).toInt()
-                params.topMargin  = (coords.second - fichaSize / 2f).toInt()
+
+                var cx = coords.first
+                var cy = coords.second
+
+                val fichasAqui = fichasEnTablero[ficha.posicion] ?: emptyList()
+
+                if (fichasAqui.size > 1) {
+                    val indice = fichasAqui.indexOf(ficha)
+
+                    // Separación desde el centro (1/3 del tamaño de la ficha suele ir bien)
+                    val offset = fichaSize / 1.5f
+
+                    // Si es la primera ficha (-1) la movemos a la izquierda/arriba
+                    // Si es la segunda ficha (1) la movemos a la derecha/abajo
+                    val modificador = if (indice == 0) -1 else 1
+
+                    val pos = ficha.posicion
+
+                    // Comprobamos la orientación del "brazo" del tablero donde está la ficha
+                    val esVertical = pos in 1..8 || pos in 61..68 ||   // Brazo inferior
+                            pos in 27..34 || pos in 35..42 || // Brazo superior
+                            pos in 101..108 || pos in 401..408// Pasillos rojo y amarillo
+
+                    val esHorizontal = pos in 10..17 || pos in 18..25 || // Brazo derecho
+                            pos in 44..51 || pos in 52..59 || // Brazo izquierdo
+                            pos in 201..208 || pos in 301..308// Pasillos azul y verde
+
+                    val esEsquina = pos == 9 || pos == 26 || pos == 43 || pos == 60
+
+                    // Aplicamos el desplazamiento según la orientación
+                    if (esVertical) {
+                        // Mover en el eje X (izquierda y derecha dentro de la casilla)
+                        cx += offset * modificador
+                    } else if (esHorizontal) {
+                        // Mover en el eje Y (arriba y abajo dentro de la casilla)
+                        cy += offset * modificador
+                    } else if (esEsquina) {
+                        // Para las 4 esquinas del tablero, las dejamos en diagonal para que no se salgan
+                        cx += offset * modificador
+                        cy += offset * modificador
+                    }
+                }
+
+                params.leftMargin = (cx - fichaSize / 2f).toInt()
+                params.topMargin  = (cy - fichaSize / 2f).toInt()
             }
 
             view.layoutParams = params
