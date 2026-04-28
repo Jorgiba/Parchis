@@ -49,7 +49,7 @@ class ParchisGame(
             repiteTurno = false
         }
         
-        return ultimoDado
+        return 5
     }
 
     fun siguienteTurno() {

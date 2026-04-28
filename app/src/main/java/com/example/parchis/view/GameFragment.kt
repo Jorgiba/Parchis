@@ -25,11 +25,10 @@ class GameFragment : Fragment() {
     private var _binding: FragmentGameBinding? = null
     private val binding get() = _binding!!
 
-    // CORRECCIÓN: Usar la factoría para pasar el DAO al ViewModel
     private val viewModel: GameViewModel by viewModels {
         ViewModelFactory((requireActivity().application as ParchisApplication).database.usuarioDao())
     }
-    
+
     private val fichaViews = mutableMapOf<Ficha, ImageView>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,7 +87,10 @@ class GameFragment : Fragment() {
             mostrarNombresJugadores()
         }
 
-        crearFichas()
+        // Esperar a que el boardContainer tenga sus dimensiones antes de crear y posicionar fichas
+        binding.boardContainer.post {
+            crearFichas()
+        }
     }
 
     private fun showAbandonDialog() {
@@ -148,13 +150,15 @@ class GameFragment : Fragment() {
             jugador.fichas.forEach { ficha ->
                 val fichaView = ImageView(requireContext()).apply {
                     setImageResource(R.drawable.ficha_circle)
-                    val colorRes = when(ficha.color) {
+                    val colorRes = when (ficha.color) {
                         ColorParchis.ROJO -> android.R.color.holo_red_dark
                         ColorParchis.AZUL -> android.R.color.holo_blue_dark
                         ColorParchis.VERDE -> android.R.color.holo_green_dark
                         ColorParchis.AMARILLO -> android.R.color.holo_orange_light
                     }
-                    imageTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), colorRes))
+                    imageTintList = ColorStateList.valueOf(
+                        ContextCompat.getColor(requireContext(), colorRes)
+                    )
                     setOnClickListener { viewModel.onFichaClicked(ficha) }
                 }
                 fichaViews[ficha] = fichaView
@@ -165,34 +169,59 @@ class GameFragment : Fragment() {
     }
 
     private fun actualizarPosicionesFichas() {
-        binding.boardContainer.post {
-            val density = resources.displayMetrics.density
-            val size = (20 * density).toInt()
-            val boardWidth = binding.boardContainer.width
-            val boardHeight = binding.boardContainer.height
+        val boardWidth = binding.boardContainer.width
+        val boardHeight = binding.boardContainer.height
 
-            if (boardWidth == 0 || boardHeight == 0) return@post
+        // Si el contenedor aún no tiene dimensiones, esperar al siguiente layout pass
+        if (boardWidth == 0 || boardHeight == 0) {
+            binding.boardContainer.post { actualizarPosicionesFichas() }
+            return
+        }
 
-            fichaViews.forEach { (ficha, view) ->
-                view.layoutParams = FrameLayout.LayoutParams(size, size).apply {
-                    if (ficha.estado == EstadoFicha.EN_CASA) {
-                        val casaBase = when(ficha.color) {
-                            ColorParchis.ROJO -> Pair(boardWidth * 0.15f, boardHeight * 0.15f)
-                            ColorParchis.AZUL -> Pair(boardWidth * 0.75f, boardHeight * 0.15f)
-                            ColorParchis.AMARILLO -> Pair(boardWidth * 0.75f, boardHeight * 0.75f)
-                            ColorParchis.VERDE -> Pair(boardWidth * 0.15f, boardHeight * 0.75f)
-                        }
-                        val offsetX = (if (ficha.id % 2 == 0) -15 else 15) * density
-                        val offsetY = (if (ficha.id < 2) -15 else 15) * density
-                        leftMargin = (casaBase.first + offsetX).toInt()
-                        topMargin = (casaBase.second + offsetY).toInt()
-                    } else {
-                        val coords = BoardPositionMapper.getPosition(ficha.posicion, boardWidth, boardHeight)
-                        leftMargin = (coords.first - size/2).toInt()
-                        topMargin = (coords.second - size/2).toInt()
-                    }
+        val density = resources.displayMetrics.density
+        val fichaSize = (15 * density).toInt()
+
+        // Posiciones dentro de cada casa para las 4 fichas (2x2 grid)
+        // Los offsets están en porcentaje del tamaño del tablero para escalar con él
+        // Las casas ocupan ~27% del tablero en cada esquina
+        // Grid 2x2: fichas a ±4% del centro de la casa
+        val casaOffsets = listOf(
+            Pair(-0.04f, -0.04f),  // ficha id=0: arriba-izquierda
+            Pair( 0.04f, -0.04f),  // ficha id=1: arriba-derecha
+            Pair(-0.04f,  0.04f),  // ficha id=2: abajo-izquierda
+            Pair( 0.04f,  0.04f)   // ficha id=3: abajo-derecha
+        )
+
+        fichaViews.forEach { (ficha, view) ->
+            val params = FrameLayout.LayoutParams(fichaSize, fichaSize)
+
+            if (ficha.estado == EstadoFicha.EN_CASA) {
+                // Centro de cada casa en coordenadas relativas al tablero
+                val casaCentro = when (ficha.color) {
+                    ColorParchis.ROJO     -> Pair(0.165f, 0.165f)  // esquina superior izquierda
+                    ColorParchis.AZUL     -> Pair(0.835f, 0.165f)  // esquina superior derecha
+                    ColorParchis.AMARILLO -> Pair(0.835f, 0.835f)  // esquina inferior derecha
+                    ColorParchis.VERDE    -> Pair(0.165f, 0.835f)  // esquina inferior izquierda
                 }
+
+                // Offset para este id de ficha (0-3) dentro del grid 2x2
+                val offset = casaOffsets[ficha.id.coerceIn(0, 3)]
+
+                val cx = (casaCentro.first + offset.first) * boardWidth
+                val cy = (casaCentro.second + offset.second) * boardHeight
+
+                params.leftMargin = (cx - fichaSize / 2f).toInt()
+                params.topMargin  = (cy - fichaSize / 2f).toInt()
+
+            } else {
+                val coords = BoardPositionMapper.getPosition(
+                    ficha.posicion, boardWidth, boardHeight
+                )
+                params.leftMargin = (coords.first  - fichaSize / 2f).toInt()
+                params.topMargin  = (coords.second - fichaSize / 2f).toInt()
             }
+
+            view.layoutParams = params
         }
     }
 
