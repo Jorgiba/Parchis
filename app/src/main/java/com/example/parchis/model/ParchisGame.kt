@@ -55,10 +55,10 @@ class ParchisGame(
     fun obtenerJugadorActual(): Jugador = jugadores[indiceTurnoActual]
 
     fun lanzarDado(): Int {
-        ultimoDado = Random.nextInt(1, 7)
-        Log.d("ParchisLogic", "🎲 Dado lanzado: $ultimoDado")
+        val dadoFisico = Random.nextInt(1, 7)
+        Log.d("ParchisLogic", "🎲 Dado lanzado: $dadoFisico")
 
-        if (ultimoDado == 6) {
+        if (dadoFisico == 6) {
             vecesSextoConsecutivo++
             repiteTurno = true
             if (vecesSextoConsecutivo == 3) {
@@ -71,7 +71,17 @@ class ParchisGame(
             repiteTurno = false
         }
 
-        return ultimoDado
+        val jugadorActual = obtenerJugadorActual()
+        val fichasEnCasa = jugadorActual.fichas.count { it.estado == EstadoFicha.EN_CASA }
+
+        ultimoDado = dadoFisico
+
+        if (dadoFisico == 6 && fichasEnCasa == 0) {
+            Log.d("ParchisLogic", "🚀 ¡BONUS DE VELOCIDAD! El equipo está fuera de casa. El 6 se transforma en 12.")
+            return 12
+        }
+
+        return dadoFisico
     }
 
     fun siguienteTurno() {
