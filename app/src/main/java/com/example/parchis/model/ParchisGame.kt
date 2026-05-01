@@ -39,9 +39,18 @@ class ParchisGame(
                 jugadores.add(Bot("Bot ${i + 1}", coloresAleatorios[i], dificultad))
             }
 
-            return jugadores.sortedBy { it.color.ordinal }
+            val ordenAntihorario = mapOf(
+                ColorParchis.AMARILLO to 1,
+                ColorParchis.AZUL to 2,
+                ColorParchis.ROJO to 3,
+                ColorParchis.VERDE to 4
+            )
+
+            return jugadores.sortedBy { ordenAntihorario[it.color] ?: 0}
+
         }
     }
+
 
     fun obtenerJugadorActual(): Jugador = jugadores[indiceTurnoActual]
 
@@ -75,27 +84,48 @@ class ParchisGame(
 
     fun puedeMoverFicha(ficha: Ficha, pasos: Int): Boolean {
         if (ficha.estado == EstadoFicha.FINALIZADA) return false
-        
-        val destino = simularDestino(ficha, pasos)
-        
-        // Comprobar barreras (2 fichas en destino)
+
+        if (ficha.estado == EstadoFicha.EN_CASA) {
+            if (pasos != 5) return false
+            val salida = Tablero.SALIDAS[ficha.color] ?: 1
+            val fichasEnSalida = jugadores.flatMap { it.fichas }
+                .count { (it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META) && it.posicion == salida }
+            return fichasEnSalida < 2
+        }
+
+        var posActual = ficha.posicion
+        val entradaPasillo = Tablero.ENTRADAS_PASILLO[ficha.color] ?: -1
+
+        for (i in 1..pasos) {
+            if (posActual == entradaPasillo) {
+                posActual = when (ficha.color) {
+                    ColorParchis.ROJO -> 101
+                    ColorParchis.AZUL -> 201
+                    ColorParchis.VERDE -> 301
+                    ColorParchis.AMARILLO -> 401
+                }
+            } else if (posActual >= 100) {
+                posActual++
+                if (posActual % 100 > 8) return false
+            } else {
+                posActual++
+                if (posActual > 68) posActual = 1
+            }
+
+            if (i < pasos && hayBarrera(posActual)) {
+                Log.d("ParchisLogic", "🚫 Movimiento bloqueado: La ficha ${ficha.id} no puede saltar la barrera en la casilla $posActual")
+                return false
+            }
+        }
+
         val fichasDestino = jugadores.flatMap { it.fichas }
-            .count { (it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META) && it.posicion == destino }
-        
+            .count { (it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META) && it.posicion == posActual }
+
         if (fichasDestino >= 2) {
-            Log.d("ParchisLogic", "🚫 Casilla $destino llena. Movimiento bloqueado para ficha ${ficha.id}")
+            Log.d("ParchisLogic", "🚫 Casilla de destino $posActual llena. Movimiento bloqueado.")
             return false
         }
 
-        if (ficha.estado == EstadoFicha.EN_CASA) {
-            return pasos == 5
-        }
-        
-        if (ficha.estado == EstadoFicha.EN_META) {
-            val posicionEnPasillo = ficha.posicion % 100
-            return posicionEnPasillo + pasos <= 8
-        }
-        
         return true
     }
 
@@ -216,6 +246,16 @@ class ParchisGame(
         if (Tablero.SEGUROS.contains(posicion)) return false
         return jugadores.any { jugador ->
             jugador.color != miColor && jugador.fichas.any { it.posicion == posicion && it.estado == EstadoFicha.EN_TABLERO }
+        }
+    }
+
+    fun hayBarrera(posicion: Int): Boolean {
+        if (!Tablero.SEGUROS.contains(posicion)) return false
+
+        return jugadores.any { jugador ->
+            jugador.fichas.count {
+                it.posicion == posicion && (it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META)
+            } >= 2
         }
     }
 }
