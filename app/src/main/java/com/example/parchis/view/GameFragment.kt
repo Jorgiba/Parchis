@@ -30,6 +30,7 @@ class GameFragment : Fragment() {
     }
 
     private val fichaViews = mutableMapOf<Ficha, ImageView>()
+    private var numerosDibujados = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -150,6 +151,7 @@ class GameFragment : Fragment() {
             jugador.fichas.forEach { ficha ->
                 val fichaView = ImageView(requireContext()).apply {
                     setImageResource(R.drawable.ficha_circle)
+                    elevation = 10f
                     val colorRes = when (ficha.color) {
                         ColorParchis.ROJO -> android.R.color.holo_red_dark
                         ColorParchis.AZUL -> android.R.color.holo_blue_dark
@@ -177,6 +179,8 @@ class GameFragment : Fragment() {
             binding.boardContainer.post { actualizarPosicionesFichas() }
             return
         }
+
+        dibujarNumerosCasillas(boardWidth, boardHeight)
 
         val density = resources.displayMetrics.density
         val fichaSize = (15 * density).toInt()
@@ -270,6 +274,77 @@ class GameFragment : Fragment() {
 
             view.layoutParams = params
         }
+    }
+
+    private fun dibujarNumerosCasillas(boardWidth: Int, boardHeight: Int) {
+        if (numerosDibujados) return
+
+        val boardSize = minOf(boardWidth, boardHeight)
+        val cellSize = boardSize / 19f
+
+        // --- 🔧 CONTROL DE DISTANCIA 🔧 ---
+        // offsetPrincipal: Cuánto se pega al pasillo central de color
+        val offsetPrincipal = cellSize * 0.35f
+        // offsetSecundario: Cuánto se pega a la otra esquina de la casilla (ej. hacia arriba)
+        val offsetSecundario = cellSize * 0.35f
+
+        for (i in 1..68) {
+            val tv = android.widget.TextView(requireContext()).apply {
+                text = i.toString()
+                textSize = 8f
+                setTextColor(android.graphics.Color.BLACK)
+            }
+
+            binding.boardContainer.addView(tv)
+
+            val coords = BoardPositionMapper.getPosition(i, boardWidth, boardHeight)
+            val params = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+
+            var cx = coords.first
+            var cy = coords.second
+
+            // Lógica inteligente para pegar el número siempre al pasillo de color
+            when (i) {
+                // --- BRAZOS VERTICALES (Amarillo y Rojo) ---
+                // Columnas Derechas (1 al 8 y 26 al 33) -> El interior es la IZQUIERDA (-)
+                in 1..8, in 26..33 -> {
+                    cx -= offsetPrincipal
+                    cy -= offsetSecundario
+                }
+                // Columnas Izquierdas (35 al 42 y 60 al 67) -> El interior es la DERECHA (+)
+                in 35..42, in 60..67 -> {
+                    cx += offsetPrincipal
+                    cy -= offsetSecundario
+                }
+
+                // --- BRAZOS HORIZONTALES (Azul y Verde) ---
+                // Filas Superiores (18 al 25 y 43 al 50) -> El interior es ABAJO (+)
+                in 18..25, in 43..50 -> {
+                    cy += offsetPrincipal
+                    cx -= offsetSecundario
+                }
+                // Filas Inferiores (9 al 16 y 52 al 59) -> El interior es ARRIBA (-)
+                in 9..16, in 52..59 -> {
+                    cy -= offsetPrincipal
+                    cx -= offsetSecundario
+                }
+
+                // Casillas centrales de los extremos (17, 34, 51, 68)
+                else -> {
+                    cx -= offsetPrincipal
+                    cy -= offsetSecundario
+                }
+            }
+
+            params.leftMargin = cx.toInt()
+            params.topMargin = cy.toInt()
+            tv.layoutParams = params
+        }
+
+        numerosDibujados = true
     }
 
     override fun onDestroyView() {
