@@ -11,6 +11,7 @@ class ParchisGame(
     var ultimoDado: Int = 0
     var repiteTurno: Boolean = false
     var vecesSextoConsecutivo: Int = 0
+    var movimientosExtra: Int = 0
 
     companion object {
         fun crearPartidaLocal(
@@ -45,8 +46,7 @@ class ParchisGame(
     fun obtenerJugadorActual(): Jugador = jugadores[indiceTurnoActual]
 
     fun lanzarDado(): Int {
-        var xd = arrayOf(1,2,5)
-        ultimoDado = xd.random()
+        ultimoDado = Random.nextInt(1, 7)
         Log.d("ParchisLogic", "🎲 Dado lanzado: $ultimoDado")
 
         if (ultimoDado == 6) {
@@ -105,9 +105,32 @@ class ParchisGame(
 
         if (ficha.estado == EstadoFicha.EN_CASA && pasos == 5) {
             val salida = Tablero.SALIDAS[ficha.color] ?: 1
+
+            // 1. Contamos cuántas fichas tenemos en casa ANTES de mover nada
+            val fichasEnCasaAntes = jugadorActual.fichas.count { it.estado == EstadoFicha.EN_CASA }
+
+            // 2. Contamos cuántas fichas (de cualquier jugador) hay ya en nuestra casilla de salida
+            val fichasEnSalida = jugadores.flatMap { it.fichas }
+                .count { (it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META) && it.posicion == salida }
+
+            // 3. Movemos la primera ficha que ha elegido el usuario/bot
             ficha.posicion = salida
             ficha.estado = EstadoFicha.EN_TABLERO
             Log.d("ParchisLogic", "🏠 SALIDA: ${jugadorActual.nombre} saca ficha ${ficha.id} a casilla $salida")
+
+            // 4. Si teníamos las 4 en casa (es el primer 5) Y la casilla de salida estaba completamente vacía
+            // sacamos automáticamente una segunda ficha para formar la barrera inicial.
+            if (fichasEnCasaAntes == 4 && fichasEnSalida == 0) {
+                val segundaFicha = jugadorActual.fichas.firstOrNull { it.estado == EstadoFicha.EN_CASA }
+                segundaFicha?.let {
+                    it.posicion = salida
+                    it.estado = EstadoFicha.EN_TABLERO
+                    Log.d("ParchisLogic", "🏠 SALIDA DOBLE: ${jugadorActual.nombre} saca también la ficha ${it.id} a casilla $salida")
+                }
+            } else if (fichasEnCasaAntes == 4 && fichasEnSalida == 1) {
+                Log.d("ParchisLogic", "⚠️ SALIDA DOBLE CANCELADA: Ya había 1 ficha en la salida. Para no exceder el límite de 2, solo sale una ficha.")
+            }
+
             return
         }
 
@@ -154,7 +177,7 @@ class ParchisGame(
                         Log.d("ParchisLogic", "⚔️ ¡COMIDA! $miColor come a ${jugador.color} en casilla $posicion")
                         fichaEnemiga.posicion = -1
                         fichaEnemiga.estado = EstadoFicha.EN_CASA
-                        repiteTurno = true // Regla: Al comer se repite turno (o se cuentan 20)
+                        movimientosExtra = 20 // Regla: Al comer se repite turno (o se cuentan 20)
                     }
                 }
             }

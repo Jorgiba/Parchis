@@ -95,6 +95,19 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
                 if (gameInstance.obtenerJugadorActual().fichas.all { it.estado == EstadoFicha.FINALIZADA }) {
                     Log.d("ParchisGame", "🏆 ¡PARTIDA FINALIZADA! Ganador: ${bot.nombre}")
                     gestionarFinPartida(bot)
+                } else if (gameInstance.movimientosExtra > 0) {
+                    val extra = gameInstance.movimientosExtra
+                    gameInstance.movimientosExtra = 0
+
+                    if (gameInstance.puedeMoverFicha(ficha, extra)) {
+                        Log.d("ParchisGame", "🤖🎁 BONUS: El bot debe mover $extra casillas.")
+                        _diceResult.value = extra
+                        delay(1000)
+                        // El bot se llama a sí mismo para usar el 20 inmediatamente
+                        ejecutarMovimientoBot(bot, extra)
+                    } else {
+                        finalizarTurno()
+                    }
                 } else {
                     finalizarTurno()
                 }
@@ -138,6 +151,19 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
             if (gameInstance.obtenerJugadorActual().fichas.all { it.estado == EstadoFicha.FINALIZADA }) {
                 Log.d("ParchisGame", "🏆 ¡PARTIDA FINALIZADA! Ganador: ${jugadorActual.nombre}")
                 gestionarFinPartida(jugadorActual)
+            } else if (gameInstance.movimientosExtra > 0) {
+                // Si ha comido, tiene movimientos extra
+                val extra = gameInstance.movimientosExtra
+                gameInstance.movimientosExtra = 0 // Consumimos el bonus
+
+                if (gameInstance.puedeMoverFicha(ficha, extra)) {
+                    Log.d("ParchisGame", "🎁 BONUS: ${jugadorActual.nombre} debe mover $extra casillas.")
+                    _diceResult.value = extra // Cambiamos el dado en pantalla al número del bonus
+                    // IMPORTANTE: No llamamos a finalizarTurno(). El jugador debe hacer otro clic.
+                } else {
+                    Log.d("ParchisGame", "🚫 Tiene bonus de $extra pero ninguna ficha puede moverse.")
+                    finalizarTurno()
+                }
             } else {
                 finalizarTurno()
             }
