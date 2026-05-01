@@ -9,68 +9,85 @@ object BoardPositionMapper {
     private val coords = mutableMapOf<Int, Pair<Float, Float>>()
 
     init {
-        fun pos(index: Int): Float = C0 + index * S
+        // --- 🔧 RUEDAS DE CALIBRACIÓN 🔧 ---
+        // Ahora sí, si bajas el factorPaso (ej: 0.95f), las casillas se aprietan
+        // pero gracias al anclaje, la casilla de salida NO se mueve.
+        val factorPaso = 0.96f
+
+        fun pos(index: Int): Float {
+            val distanciaAlCentro = index - 9
+            return 0.5f + (distanciaAlCentro * S * factorPaso)
+        }
+
+        // Las salidas (ej: 5, 22, 39, 56) están exactamente a 5 casillas del centro.
+        val perdidaEnSalida = 5 * S * (1.0f - factorPaso)
 
         val dSide = 0.06f
-        val dOut = 0.025f
+        val dOut = 0.025f + perdidaEnSalida
 
-        // --- CIRCUITO COMÚN (1-68) ---
+        // --- CIRCUITO COMÚN (1-68) EXACTO A TU IMAGEN ---
 
         // BRAZO INFERIOR (Amarillo)
-        for (i in 1..8) coords[i] = Pair(pos(10) + dSide, pos(19 - i) + dOut) // Columna derecha (Salida Amarilla)
-        for (i in 1..8) coords[60 + i] = Pair(pos(8) - dSide, pos(10 + i) + dOut) // Columna izquierda bajando
+        // Columna izquierda (8 casillas): 60 a 67
+        for (i in 0..7) coords[60 + i] = Pair(pos(8) - dSide, pos(11 + i) + dOut)
+        // Seguro del borde (Tapón central): 68
+        coords[68] = Pair(pos(9), pos(18) + dOut)
+        // Columna derecha (8 casillas): 1 a 8
+        for (i in 0..7) coords[1 + i] = Pair(pos(10) + dSide, pos(18 - i) + dOut)
 
         // BRAZO DERECHO (Azul)
-        for (i in 1..8) coords[9 + i] = Pair(pos(10 + i) + dOut, pos(10) + dSide) // Fila inferior
-        for (i in 1..8) coords[17 + i] = Pair(pos(19 - i) + dOut, pos(8) - dSide) // Fila superior (Salida Azul)
+        // Fila inferior (8 casillas): 9 a 16
+        for (i in 0..7) coords[9 + i] = Pair(pos(11 + i) + dOut, pos(10) + dSide)
+        // Seguro del borde (Tapón central): 17
+        coords[17] = Pair(pos(18) + dOut, pos(9))
+        // Fila superior (8 casillas): 18 a 25
+        for (i in 0..7) coords[18 + i] = Pair(pos(18 - i) + dOut, pos(8) - dSide)
 
         // BRAZO SUPERIOR (Rojo)
-        for (i in 1..8) coords[26 + i] = Pair(pos(10) + dSide, pos(8 - i) - dOut) // Columna derecha subiendo
-        for (i in 1..8) coords[34 + i] = Pair(pos(8) - dSide, pos(i - 1) - dOut) // Columna izquierda (Salida Roja)
+        // Columna derecha (8 casillas): 26 a 33
+        for (i in 0..7) coords[26 + i] = Pair(pos(10) + dSide, pos(7 - i) - dOut)
+        // Seguro del borde (Tapón central): 34 (El que rodeaste en la imagen)
+        coords[34] = Pair(pos(9), pos(0) - dOut)
+        // Columna izquierda (8 casillas): 35 a 42
+        for (i in 0..7) coords[35 + i] = Pair(pos(8) - dSide, pos(0 + i) - dOut)
 
         // BRAZO IZQUIERDO (Verde)
-        for (i in 1..8) coords[43 + i] = Pair(pos(8 - i) - dOut, pos(8) - dSide) // Fila superior yendo a izq
-        for (i in 1..8) coords[51 + i] = Pair(pos(i - 1) - dOut, pos(10) + dSide) // Fila inferior (Salida Verde)
+        // Fila superior (8 casillas): 43 a 50
+        for (i in 0..7) coords[43 + i] = Pair(pos(7 - i) - dOut, pos(8) - dSide)
+        // Seguro del borde (Tapón central): 51
+        coords[51] = Pair(pos(0) - dOut, pos(9))
+        // Fila inferior (8 casillas): 52 a 59
+        for (i in 0..7) coords[52 + i] = Pair(pos(0 + i) - dOut, pos(10) + dSide)
 
-        // ESQUINAS INTERIORES
-        coords[9] = Pair(pos(10) + dSide, pos(10) + dSide)
-        coords[26] = Pair(pos(10) + dSide, pos(8) - dSide)
-        coords[43] = Pair(pos(8) - dSide, pos(8) - dSide)
-        coords[60] = Pair(pos(8) - dSide, pos(10) + dSide)
 
-        // --- PASILLOS DE META (Centro de los brazos) ---
+        // --- PASILLOS DE META ---
 
         // Rojo (101-108)
-        for (i in 1..8) coords[100 + i] = Pair(pos(9), pos(i - 1) - dOut)
+        for (i in 0..7) coords[101 + i] = Pair(pos(9), pos(1 + i) - dOut)
 
         // Azul (201-208)
-        for (i in 1..8) coords[200 + i] = Pair(pos(19 - i) + dOut, pos(9))
+        for (i in 0..7) coords[201 + i] = Pair(pos(17 - i) + dOut, pos(9))
 
         // Verde (301-308)
-        for (i in 1..8) coords[300 + i] = Pair(pos(i - 1) - dOut, pos(9))
+        for (i in 0..7) coords[301 + i] = Pair(pos(1 + i) - dOut, pos(9))
 
         // Amarillo (401-408)
-        for (i in 1..8) coords[400 + i] = Pair(pos(9), pos(19 - i) + dOut)
-
+        for (i in 0..7) coords[401 + i] = Pair(pos(9), pos(17 - i) + dOut)
     }
+
     fun getPosition(id: Int, boardWidth: Int, boardHeight: Int): Pair<Float, Float> {
         val relativePos = coords[id] ?: Pair(0.5f, 0.5f)
 
-        // 1. Encontrar el tamaño real de la imagen cuadrada dentro del contenedor rectangular
         val boardSize = minOf(boardWidth, boardHeight)
-
-        // 2. Calcular el espacio vacío (padding) que deja Android para centrar la imagen
         val offsetX = (boardWidth - boardSize) / 2f
         val offsetY = (boardHeight - boardSize) / 2f
 
-        // 3. Ajuste del grosor del borde marrón de tu diseño.
         val margenBorde = 0.02f
 
         val usableSize = boardSize * (1.0f - 2 * margenBorde)
         val finalOffsetX = offsetX + boardSize * margenBorde
         val finalOffsetY = offsetY + boardSize * margenBorde
 
-        // 4. Calcular la coordenada final en píxeles de la pantalla
         val px = finalOffsetX + (relativePos.first * usableSize)
         val py = finalOffsetY + (relativePos.second * usableSize)
 
