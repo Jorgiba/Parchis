@@ -218,6 +218,10 @@ class ParchisGame(
                         fichaEnemiga.posicion = -1
                         fichaEnemiga.estado = EstadoFicha.EN_CASA
                         movimientosExtra = 20 // Regla: Al comer se repite turno (o se cuentan 20)
+                        val jugadorActual = obtenerJugadorActual()
+                        if (jugadorActual is JugadorRegistrado) {
+                            jugadorActual.usuario.fichasComidas++
+                        }
                     }
                 }
             }
