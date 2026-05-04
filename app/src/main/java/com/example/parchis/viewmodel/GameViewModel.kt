@@ -9,8 +9,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.parchis.R
 import com.example.parchis.database.UsuarioDao
 import com.example.parchis.model.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Date
 import java.util.UUID
 
@@ -28,7 +31,7 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
     private val _gameFinished = MutableLiveData<Jugador?>()
     val gameFinished: LiveData<Jugador?> = _gameFinished
 
-    // Propiedades para DataBinding (Eliminan lógica repetida en el Fragment)
+    // Propiedades para DataBinding
     val diceValue: LiveData<String> = _diceResult.map { it?.toString() ?: "?" }
     
     val turnText: LiveData<String> = _currentPlayer.map { jugador ->
@@ -147,22 +150,47 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
     private fun gestionarFinPartida(ganador: Jugador) {
         _gameFinished.value = ganador
         val usuario = SesionUsuario.usuarioLogueado ?: return
+        val jugadores = game?.jugadores?.map { it.nombre } ?: emptyList()
+
         viewModelScope.launch {
             val resultado = if (ganador.nombre == usuario.username) ResultadoPartida.VICTORIA else ResultadoPartida.DERROTA
-            val nuevaPartida = Partida(UUID.randomUUID().toString(), Date(), resultado, game?.jugadores?.map { it.nombre } ?: emptyList(), usuario.username)
-            usuario.agregarPartidaAlHistorial(nuevaPartida)
-            usuarioDao.actualizarUsuario(usuario)
-            usuarioDao.insertarPartida(nuevaPartida)
+            val nuevaPartida = Partida(
+                id = UUID.randomUUID().toString(),
+                fecha = Date(),
+                resultado = resultado,
+                jugadores = jugadores,
+                usernameUsuario = usuario.username
+            )
+            
+            // Usamos NonCancellable para asegurar que si el usuario sale rápido del fragmento, se guarde igual
+            withContext(Dispatchers.IO + NonCancellable) {
+                usuario.agregarPartidaAlHistorial(nuevaPartida)
+                usuarioDao.actualizarUsuario(usuario)
+                usuarioDao.insertarPartida(nuevaPartida)
+                Log.d("ParchisGame", "💾 Partida finalizada guardada en historial")
+            }
         }
     }
 
     fun abandonarPartida() {
         val usuario = SesionUsuario.usuarioLogueado ?: return
+        val jugadores = game?.jugadores?.map { it.nombre } ?: emptyList()
+
         viewModelScope.launch {
-            val nuevaPartida = Partida(UUID.randomUUID().toString(), Date(), ResultadoPartida.ABANDONADA, game?.jugadores?.map { it.nombre } ?: emptyList(), usuario.username)
-            usuario.agregarPartidaAlHistorial(nuevaPartida)
-            usuarioDao.actualizarUsuario(usuario)
-            usuarioDao.insertarPartida(nuevaPartida)
+            val nuevaPartida = Partida(
+                id = UUID.randomUUID().toString(),
+                fecha = Date(),
+                resultado = ResultadoPartida.ABANDONADA,
+                jugadores = jugadores,
+                usernameUsuario = usuario.username
+            )
+            
+            withContext(Dispatchers.IO + NonCancellable) {
+                usuario.agregarPartidaAlHistorial(nuevaPartida)
+                usuarioDao.actualizarUsuario(usuario)
+                usuarioDao.insertarPartida(nuevaPartida)
+                Log.d("ParchisGame", "💾 Abandono registrado en historial")
+            }
         }
     }
 
