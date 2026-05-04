@@ -47,24 +47,22 @@ class ParchisGame(
             )
 
             return jugadores.sortedBy { ordenAntihorario[it.color] ?: 0}
-
         }
     }
-
 
     fun obtenerJugadorActual(): Jugador = jugadores[indiceTurnoActual]
 
     fun lanzarDado(): Int {
         val dadoFisico = Random.nextInt(1, 7)
-        Log.d("ParchisLogic", "🎲 Dado lanzado: $dadoFisico")
+        Log.d("ParchisLogic", "Dado lanzado: $dadoFisico")
 
         if (dadoFisico == 6) {
             vecesSextoConsecutivo++
             repiteTurno = true
             if (vecesSextoConsecutivo == 3) {
-                Log.d("ParchisLogic", "⚠️ TERCER SEIS! El jugador pierde el turno.")
                 vecesSextoConsecutivo = 0
                 repiteTurno = false
+                return 6
             }
         } else {
             vecesSextoConsecutivo = 0
@@ -73,14 +71,9 @@ class ParchisGame(
 
         val jugadorActual = obtenerJugadorActual()
         val fichasEnCasa = jugadorActual.fichas.count { it.estado == EstadoFicha.EN_CASA }
-
         ultimoDado = dadoFisico
 
-        if (dadoFisico == 6 && fichasEnCasa == 0) {
-            Log.d("ParchisLogic", "🚀 ¡BONUS DE VELOCIDAD! El equipo está fuera de casa. El 6 se transforma en 12.")
-            return 12
-        }
-
+        if (dadoFisico == 6 && fichasEnCasa == 0) return 12
         return dadoFisico
     }
 
@@ -89,7 +82,7 @@ class ParchisGame(
             indiceTurnoActual = (indiceTurnoActual + 1) % jugadores.size
         }
         repiteTurno = false
-        Log.d("ParchisLogic", "🔄 Cambio de turno. Turno de: ${obtenerJugadorActual().nombre}")
+        movimientosExtra = 0
     }
 
     fun puedeMoverFicha(ficha: Ficha, pasos: Int): Boolean {
@@ -99,7 +92,7 @@ class ParchisGame(
             if (pasos != 5) return false
             val salida = Tablero.SALIDAS[ficha.color] ?: 1
             val fichasEnSalida = jugadores.flatMap { it.fichas }
-                .count { (it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META) && it.posicion == salida }
+                .count { it.posicion == salida && it.estado != EstadoFicha.EN_CASA }
             return fichasEnSalida < 2
         }
 
@@ -122,106 +115,67 @@ class ParchisGame(
                 if (posActual > 68) posActual = 1
             }
 
-            if (i < pasos && hayBarrera(posActual)) {
-                Log.d("ParchisLogic", "🚫 Movimiento bloqueado: La ficha ${ficha.id} no puede saltar la barrera en la casilla $posActual")
-                return false
-            }
+            if (i < pasos && hayBarrera(posActual)) return false
         }
 
         val fichasDestino = jugadores.flatMap { it.fichas }
-            .count { (it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META) && it.posicion == posActual }
+            .count { it.posicion == posActual && it.estado != EstadoFicha.EN_CASA }
 
-        if (fichasDestino >= 2) {
-            Log.d("ParchisLogic", "🚫 Casilla de destino $posActual llena. Movimiento bloqueado.")
-            return false
-        }
-
-        return true
+        return fichasDestino < 2
     }
 
     fun moverFicha(ficha: Ficha, pasos: Int) {
-        val jugadorActual = obtenerJugadorActual()
-        val posOriginal = if (ficha.estado == EstadoFicha.EN_CASA) "CASA" else ficha.posicion.toString()
+        var posDestino = -1
+        var acabaDeSalir = false
 
         if (ficha.estado == EstadoFicha.EN_CASA && pasos == 5) {
-            val salida = Tablero.SALIDAS[ficha.color] ?: 1
-
-            // 1. Contamos cuántas fichas tenemos en casa ANTES de mover nada
-            val fichasEnCasaAntes = jugadorActual.fichas.count { it.estado == EstadoFicha.EN_CASA }
-
-            // 2. Contamos cuántas fichas (de cualquier jugador) hay ya en nuestra casilla de salida
-            val fichasEnSalida = jugadores.flatMap { it.fichas }
-                .count { (it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META) && it.posicion == salida }
-
-            // 3. Movemos la primera ficha que ha elegido el usuario/bot
-            ficha.posicion = salida
+            posDestino = Tablero.SALIDAS[ficha.color] ?: 1
+            ficha.posicion = posDestino
             ficha.estado = EstadoFicha.EN_TABLERO
-            Log.d("ParchisLogic", "🏠 SALIDA: ${jugadorActual.nombre} saca ficha ${ficha.id} a casilla $salida")
-
-            // 4. Si teníamos las 4 en casa (es el primer 5) Y la casilla de salida estaba completamente vacía
-            // sacamos automáticamente una segunda ficha para formar la barrera inicial.
-            if (fichasEnCasaAntes == 4 && fichasEnSalida == 0) {
-                val segundaFicha = jugadorActual.fichas.firstOrNull { it.estado == EstadoFicha.EN_CASA }
-                segundaFicha?.let {
-                    it.posicion = salida
-                    it.estado = EstadoFicha.EN_TABLERO
-                    Log.d("ParchisLogic", "🏠 SALIDA DOBLE: ${jugadorActual.nombre} saca también la ficha ${it.id} a casilla $salida")
-                }
-            } else if (fichasEnCasaAntes == 4 && fichasEnSalida == 1) {
-                Log.d("ParchisLogic", "⚠️ SALIDA DOBLE CANCELADA: Ya había 1 ficha en la salida. Para no exceder el límite de 2, solo sale una ficha.")
-            }
-
-            return
-        }
-
-        var posActual = ficha.posicion
-        val entradaPasillo = Tablero.ENTRADAS_PASILLO[ficha.color] ?: -1
-
-        for (i in 1..pasos) {
-            if (posActual == entradaPasillo) {
-                posActual = when (ficha.color) {
-                    ColorParchis.ROJO -> 101
-                    ColorParchis.AZUL -> 201
-                    ColorParchis.VERDE -> 301
-                    ColorParchis.AMARILLO -> 401
-                }
-                ficha.estado = EstadoFicha.EN_META
-                Log.d("ParchisLogic", "🌈 PASILLO: Ficha ${ficha.id} entra en pasillo")
-            } else if (posActual >= 100) {
-                posActual++
-                if (posActual % 100 == 8) {
-                    if (i == pasos) {
-                        ficha.estado = EstadoFicha.FINALIZADA
-                        Log.d("ParchisLogic", "🏁 META: ¡Ficha ${ficha.id} ha llegado!")
+            acabaDeSalir = true
+            Log.d("ParchisLogic", "🏠 SALIDA: saca ficha ${ficha.id} a casilla $posDestino")
+        } else {
+            var pos = ficha.posicion
+            val entrada = Tablero.ENTRADAS_PASILLO[ficha.color] ?: -1
+            for (i in 1..pasos) {
+                if (pos == entrada) {
+                    pos = when (ficha.color) {
+                        ColorParchis.ROJO -> 101; ColorParchis.AZUL -> 201
+                        ColorParchis.VERDE -> 301; ColorParchis.AMARILLO -> 401
                     }
+                    ficha.estado = EstadoFicha.EN_META
+                } else if (pos >= 100) {
+                    pos++
+                    if (pos % 100 == 8 && i == pasos) {
+                        ficha.estado = EstadoFicha.FINALIZADA
+                        movimientosExtra = 10
+                        repiteTurno = true
+                    }
+                } else {
+                    pos++
+                    if (pos > 68) pos = 1
                 }
-            } else {
-                posActual++
-                if (posActual > 68) posActual = 1
             }
+            ficha.posicion = pos
+            posDestino = pos
         }
-        
-        ficha.posicion = posActual
-        Log.d("ParchisLogic", "🏃 MOVIMIENTO: ${jugadorActual.nombre} Ficha ${ficha.id}: $posOriginal -> $posActual")
-        
-        comprobarSiCome(posActual, ficha.color)
+
+        if (posDestino != -1) comprobarSiCome(posDestino, ficha.color, acabaDeSalir)
     }
 
-    private fun comprobarSiCome(posicion: Int, miColor: ColorParchis) {
-        if (Tablero.SEGUROS.contains(posicion)) return
+    private fun comprobarSiCome(posicion: Int, miColor: ColorParchis, acabaDeSalir: Boolean = false) {
+        val miSalida = Tablero.SALIDAS[miColor] == posicion
+        if (Tablero.SEGUROS.contains(posicion) && !(miSalida && acabaDeSalir)) return
 
-        jugadores.forEach { jugador ->
-            if (jugador.color != miColor) {
-                jugador.fichas.forEach { fichaEnemiga ->
-                    if (fichaEnemiga.posicion == posicion && fichaEnemiga.estado == EstadoFicha.EN_TABLERO) {
-                        Log.d("ParchisLogic", "⚔️ ¡COMIDA! $miColor come a ${jugador.color} en casilla $posicion")
-                        fichaEnemiga.posicion = -1
-                        fichaEnemiga.estado = EstadoFicha.EN_CASA
-                        movimientosExtra = 20 // Regla: Al comer se repite turno (o se cuentan 20)
-                        val jugadorActual = obtenerJugadorActual()
-                        if (jugadorActual is JugadorRegistrado) {
-                            jugadorActual.usuario.fichasComidas++
-                        }
+        jugadores.forEach { j ->
+            if (j.color != miColor) {
+                j.fichas.forEach { f ->
+                    if (f.posicion == posicion && f.estado == EstadoFicha.EN_TABLERO) {
+                        f.posicion = -1
+                        f.estado = EstadoFicha.EN_CASA
+                        movimientosExtra = 20
+                        repiteTurno = true
+                        Log.d("ParchisLogic", "⚔️ Captura! +20 pasos.")
                     }
                 }
             }
