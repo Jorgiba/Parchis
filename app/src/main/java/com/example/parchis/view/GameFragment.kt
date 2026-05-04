@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -32,13 +31,7 @@ class GameFragment : Fragment() {
     private val fichaViews = mutableMapOf<Ficha, ImageView>()
     private var numerosDibujados = false
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d("Lifecycle", "GameFragment: onCreate")
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        Log.d("Lifecycle", "GameFragment: onCreateView")
         _binding = FragmentGameBinding.inflate(inflater, container, false)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
@@ -47,7 +40,6 @@ class GameFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d("Lifecycle", "GameFragment: onViewCreated")
 
         binding.btnAbandon.setOnClickListener {
             showAbandonDialog()
@@ -63,6 +55,15 @@ class GameFragment : Fragment() {
 
         viewModel.currentPlayer.observe(viewLifecycleOwner) { jugador ->
             binding.tvTurn.text = getString(R.string.turno_jugador, jugador.nombre.uppercase())
+            
+            // Cambio de color del dado según el turno
+            val colorRes = when (jugador.color) {
+                ColorParchis.ROJO -> R.color.red
+                ColorParchis.AZUL -> R.color.blue
+                ColorParchis.VERDE -> R.color.green
+                ColorParchis.AMARILLO -> R.color.yellow
+            }
+            binding.diceActionArea.setBackgroundColor(ContextCompat.getColor(requireContext(), colorRes))
         }
 
         viewModel.fichasUpdateEvent.observe(viewLifecycleOwner) {
@@ -88,7 +89,6 @@ class GameFragment : Fragment() {
             mostrarNombresJugadores()
         }
 
-        // Esperar a que el boardContainer tenga sus dimensiones antes de crear y posicionar fichas
         binding.boardContainer.post {
             crearFichas()
         }
@@ -108,6 +108,9 @@ class GameFragment : Fragment() {
     }
 
     private fun confirmAbandon() {
+        if (SesionUsuario.usuarioLogueado != null) {
+            viewModel.abandonarPartida()
+        }
         val destination = if (SesionUsuario.usuarioLogueado != null) {
             R.id.homeFragment
         } else {
@@ -174,7 +177,6 @@ class GameFragment : Fragment() {
         val boardWidth = binding.boardContainer.width
         val boardHeight = binding.boardContainer.height
 
-        // Si el contenedor aún no tiene dimensiones, esperar al siguiente layout pass
         if (boardWidth == 0 || boardHeight == 0) {
             binding.boardContainer.post { actualizarPosicionesFichas() }
             return
@@ -189,32 +191,25 @@ class GameFragment : Fragment() {
             .filter { it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META }
             .groupBy { it.posicion }
 
-        // Posiciones dentro de cada casa para las 4 fichas (2x2 grid)
-        // Los offsets están en porcentaje del tamaño del tablero para escalar con él
-        // Las casas ocupan ~27% del tablero en cada esquina
-        // Grid 2x2: fichas a ±4% del centro de la casa
         val casaOffsets = listOf(
-            Pair(-0.04f, -0.04f),  // ficha id=0: arriba-izquierda
-            Pair( 0.04f, -0.04f),  // ficha id=1: arriba-derecha
-            Pair(-0.04f,  0.04f),  // ficha id=2: abajo-izquierda
-            Pair( 0.04f,  0.04f)   // ficha id=3: abajo-derecha
+            Pair(-0.04f, -0.04f),
+            Pair( 0.04f, -0.04f),
+            Pair(-0.04f,  0.04f),
+            Pair( 0.04f,  0.04f)
         )
 
         fichaViews.forEach { (ficha, view) ->
             val params = FrameLayout.LayoutParams(fichaSize, fichaSize)
 
             if (ficha.estado == EstadoFicha.EN_CASA) {
-                // Centro de cada casa en coordenadas relativas al tablero
                 val casaCentro = when (ficha.color) {
-                    ColorParchis.ROJO     -> Pair(0.165f, 0.165f)  // esquina superior izquierda
-                    ColorParchis.AZUL     -> Pair(0.835f, 0.165f)  // esquina superior derecha
-                    ColorParchis.AMARILLO -> Pair(0.835f, 0.835f)  // esquina inferior derecha
-                    ColorParchis.VERDE    -> Pair(0.165f, 0.835f)  // esquina inferior izquierda
+                    ColorParchis.ROJO     -> Pair(0.165f, 0.165f)
+                    ColorParchis.AZUL     -> Pair(0.835f, 0.165f)
+                    ColorParchis.AMARILLO -> Pair(0.835f, 0.835f)
+                    ColorParchis.VERDE    -> Pair(0.165f, 0.835f)
                 }
 
-                // Offset para este id de ficha (0-3) dentro del grid 2x2
                 val offset = casaOffsets[ficha.id.coerceIn(0, 3)]
-
                 val cx = (casaCentro.first + offset.first) * boardWidth
                 val cy = (casaCentro.second + offset.second) * boardHeight
 
@@ -222,10 +217,7 @@ class GameFragment : Fragment() {
                 params.topMargin  = (cy - fichaSize / 2f).toInt()
 
             } else {
-                val coords = BoardPositionMapper.getPosition(
-                    ficha.posicion, boardWidth, boardHeight
-                )
-
+                val coords = BoardPositionMapper.getPosition(ficha.posicion, boardWidth, boardHeight)
                 var cx = coords.first
                 var cy = coords.second
 
@@ -233,36 +225,17 @@ class GameFragment : Fragment() {
 
                 if (fichasAqui.size > 1) {
                     val indice = fichasAqui.indexOf(ficha)
-
-                    // Separación desde el centro (1/3 del tamaño de la ficha suele ir bien)
                     val offset = fichaSize / 1.5f
-
-                    // Si es la primera ficha (-1) la movemos a la izquierda/arriba
-                    // Si es la segunda ficha (1) la movemos a la derecha/abajo
                     val modificador = if (indice == 0) -1 else 1
-
                     val pos = ficha.posicion
 
-                    // Comprobamos la orientación del "brazo" del tablero donde está la ficha
-                    val esVertical = pos in 1..8 || pos in 61..68 ||   // Brazo inferior
-                            pos in 27..34 || pos in 35..42 || // Brazo superior
-                            pos in 101..108 || pos in 401..408// Pasillos rojo y amarillo
-
-                    val esHorizontal = pos in 10..17 || pos in 18..25 || // Brazo derecho
-                            pos in 44..51 || pos in 52..59 || // Brazo izquierdo
-                            pos in 201..208 || pos in 301..308// Pasillos azul y verde
-
+                    val esVertical = pos in 1..8 || pos in 61..68 || pos in 27..34 || pos in 35..42 || pos in 101..108 || pos in 401..408
+                    val esHorizontal = pos in 10..17 || pos in 18..25 || pos in 44..51 || pos in 52..59 || pos in 201..208 || pos in 301..308
                     val esEsquina = pos == 9 || pos == 26 || pos == 43 || pos == 60
 
-                    // Aplicamos el desplazamiento según la orientación
-                    if (esVertical) {
-                        // Mover en el eje X (izquierda y derecha dentro de la casilla)
-                        cx += offset * modificador
-                    } else if (esHorizontal) {
-                        // Mover en el eje Y (arriba y abajo dentro de la casilla)
-                        cy += offset * modificador
-                    } else if (esEsquina) {
-                        // Para las 4 esquinas del tablero, las dejamos en diagonal para que no se salgan
+                    if (esVertical) cx += offset * modificador
+                    else if (esHorizontal) cy += offset * modificador
+                    else if (esEsquina) {
                         cx += offset * modificador
                         cy += offset * modificador
                     }
@@ -278,14 +251,9 @@ class GameFragment : Fragment() {
 
     private fun dibujarNumerosCasillas(boardWidth: Int, boardHeight: Int) {
         if (numerosDibujados) return
-
         val boardSize = minOf(boardWidth, boardHeight)
         val cellSize = boardSize / 19f
-
-        // --- 🔧 CONTROL DE DISTANCIA 🔧 ---
-        // offsetPrincipal: Cuánto se pega al pasillo central de color
         val offsetPrincipal = cellSize * 0.35f
-        // offsetSecundario: Cuánto se pega a la otra esquina de la casilla (ej. hacia arriba)
         val offsetSecundario = cellSize * 0.35f
 
         for (i in 1..68) {
@@ -294,56 +262,24 @@ class GameFragment : Fragment() {
                 textSize = 8f
                 setTextColor(android.graphics.Color.BLACK)
             }
-
             binding.boardContainer.addView(tv)
-
             val coords = BoardPositionMapper.getPosition(i, boardWidth, boardHeight)
-            val params = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-            )
-
+            val params = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT)
             var cx = coords.first
             var cy = coords.second
 
-            // Lógica inteligente para pegar el número siempre al pasillo de color
             when (i) {
-                // --- BRAZOS VERTICALES (Amarillo y Rojo) ---
-                // Columnas Derechas (1 al 8 y 26 al 33) -> El interior es la IZQUIERDA (-)
-                in 1..8, in 26..33 -> {
-                    cx -= offsetPrincipal
-                    cy -= offsetSecundario
-                }
-                // Columnas Izquierdas (35 al 42 y 60 al 67) -> El interior es la DERECHA (+)
-                in 35..42, in 60..67 -> {
-                    cx += offsetPrincipal
-                    cy -= offsetSecundario
-                }
-
-                // --- BRAZOS HORIZONTALES (Azul y Verde) ---
-                // Filas Superiores (18 al 25 y 43 al 50) -> El interior es ABAJO (+)
-                in 18..25, in 43..50 -> {
-                    cy += offsetPrincipal
-                    cx -= offsetSecundario
-                }
-                // Filas Inferiores (9 al 16 y 52 al 59) -> El interior es ARRIBA (-)
-                in 9..16, in 52..59 -> {
-                    cy -= offsetPrincipal
-                    cx -= offsetSecundario
-                }
-
-                // Casillas centrales de los extremos (17, 34, 51, 68)
-                else -> {
-                    cx -= offsetPrincipal
-                    cy -= offsetSecundario
-                }
+                in 1..8, in 26..33 -> { cx -= offsetPrincipal; cy -= offsetSecundario }
+                in 35..42, in 60..67 -> { cx += offsetPrincipal; cy -= offsetSecundario }
+                in 18..25, in 43..50 -> { cy += offsetPrincipal; cx -= offsetSecundario }
+                in 9..16, in 52..59 -> { cy -= offsetPrincipal; cx -= offsetSecundario }
+                else -> { cx -= offsetPrincipal; cy -= offsetSecundario }
             }
 
             params.leftMargin = cx.toInt()
             params.topMargin = cy.toInt()
             tv.layoutParams = params
         }
-
         numerosDibujados = true
     }
 

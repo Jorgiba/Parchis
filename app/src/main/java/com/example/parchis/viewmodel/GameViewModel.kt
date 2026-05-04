@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
+import com.example.parchis.R
 import com.example.parchis.database.UsuarioDao
 import com.example.parchis.model.*
 import kotlinx.coroutines.delay
@@ -27,22 +28,29 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
     private val _gameFinished = MutableLiveData<Jugador?>()
     val gameFinished: LiveData<Jugador?> = _gameFinished
 
-    // Propiedades para DataBinding
+    // Propiedades para DataBinding (Eliminan lógica repetida en el Fragment)
     val diceValue: LiveData<String> = _diceResult.map { it?.toString() ?: "?" }
     
     val turnText: LiveData<String> = _currentPlayer.map { jugador ->
         "TURNO DE:\n${jugador?.nombre?.uppercase() ?: ""}"
     }
 
+    // Color del turno actual para el fondo del dado
+    val currentPlayerColorRes: LiveData<Int> = _currentPlayer.map { jugador ->
+        when (jugador?.color) {
+            ColorParchis.ROJO -> R.color.red
+            ColorParchis.AZUL -> R.color.blue
+            ColorParchis.VERDE -> R.color.green
+            ColorParchis.AMARILLO -> R.color.yellow
+            else -> R.color.blue
+        }
+    }
+
     private var game: ParchisGame? = null
 
     fun initGame(jugadores: List<Jugador>) {
-        Log.d("ParchisGame", "--------------------------------------")
-        Log.d("ParchisGame", "🎮 INICIANDO NUEVA PARTIDA")
         game = ParchisGame(jugadores)
-        val inicial = game?.obtenerJugadorActual()
-        Log.d("ParchisGame", "👤 Primer turno para: ${inicial?.nombre} (${inicial?.color})")
-        _currentPlayer.value = inicial
+        _currentPlayer.value = game?.obtenerJugadorActual()
         verificarTurnoBot()
     }
 
@@ -56,19 +64,16 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
         _diceResult.value = result
         
         val jugadorActual = gameInstance.obtenerJugadorActual()
-        Log.d("ParchisGame", "🎲 ${jugadorActual.nombre} ha sacado un $result")
-        
         val puedeMoverAlguna = jugadorActual.fichas.any { gameInstance.puedeMoverFicha(it, result) }
         
         if (!puedeMoverAlguna) {
-            Log.d("ParchisGame", "🚫 ${jugadorActual.nombre} no tiene movimientos posibles.")
             viewModelScope.launch {
-                delay(1500) // Pausa para que el humano vea el "bloqueo"
+                delay(1500)
                 finalizarTurno()
             }
         } else if (jugadorActual is Bot) {
             viewModelScope.launch {
-                delay(2000) // Tiempo de "reflexión" del bot tras ver el dado
+                delay(2000)
                 ejecutarMovimientoBot(jugadorActual, result)
             }
         }
@@ -79,31 +84,19 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
         val fichaAElegir = BotStrategy.decidirMovimiento(bot, dado, gameInstance)
         
         fichaAElegir?.let { ficha ->
-            Log.d("ParchisGame", "🤖 El Bot elige mover la ficha ID: ${ficha.id}")
-            
-            // Realizamos el movimiento manualmente para controlar el tiempo del turno
-            val posAnterior = if (ficha.estado == EstadoFicha.EN_CASA) "CASA" else ficha.posicion.toString()
             gameInstance.moverFicha(ficha, dado)
-            val posNueva = if (ficha.estado == EstadoFicha.FINALIZADA) "META" else ficha.posicion.toString()
-            Log.d("ParchisGame", "🏃 Bot mueve ficha ${ficha.id}: $posAnterior -> $posNueva")
-            
             _fichasUpdateEvent.value = Unit
             
             viewModelScope.launch {
-                delay(1500) // Pausa para que el humano vea dónde ha quedado la ficha del bot
-                
+                delay(1500)
                 if (gameInstance.obtenerJugadorActual().fichas.all { it.estado == EstadoFicha.FINALIZADA }) {
-                    Log.d("ParchisGame", "🏆 ¡PARTIDA FINALIZADA! Ganador: ${bot.nombre}")
                     gestionarFinPartida(bot)
                 } else if (gameInstance.movimientosExtra > 0) {
                     val extra = gameInstance.movimientosExtra
                     gameInstance.movimientosExtra = 0
-
                     if (gameInstance.puedeMoverFicha(ficha, extra)) {
-                        Log.d("ParchisGame", "🤖🎁 BONUS: El bot debe mover $extra casillas.")
                         _diceResult.value = extra
                         delay(1000)
-                        // El bot se llama a sí mismo para usar el 20 inmediatamente
                         ejecutarMovimientoBot(bot, extra)
                     } else {
                         finalizarTurno()
@@ -113,21 +106,14 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
                 }
             }
         } ?: run {
-            Log.d("ParchisGame", "⚠️ El Bot no pudo elegir ficha")
-            viewModelScope.launch {
-                delay(1000)
-                finalizarTurno()
-            }
+            viewModelScope.launch { delay(1000); finalizarTurno() }
         }
     }
 
     private fun verificarTurnoBot() {
         val jugadorActual = game?.obtenerJugadorActual()
         if (jugadorActual is Bot && _gameFinished.value == null) {
-            viewModelScope.launch {
-                delay(2000) // Pausa al empezar el turno del bot
-                lanzarDado()
-            }
+            viewModelScope.launch { delay(2000); lanzarDado() }
         }
     }
 
@@ -136,32 +122,20 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
         val gameInstance = game ?: return
         val jugadorActual = gameInstance.obtenerJugadorActual()
 
-        // Solo permitir clicks manuales si es turno de humano
         if (jugadorActual is Bot) return
 
-        if (jugadorActual.fichas.contains(ficha) && 
-            gameInstance.puedeMoverFicha(ficha, dado)) {
-            
-            val posAnterior = if (ficha.estado == EstadoFicha.EN_CASA) "CASA" else ficha.posicion.toString()
+        if (jugadorActual.fichas.contains(ficha) && gameInstance.puedeMoverFicha(ficha, dado)) {
             gameInstance.moverFicha(ficha, dado)
-            Log.d("ParchisGame", "🏃 ${jugadorActual.nombre} mueve ficha ${ficha.id}: $posAnterior -> ${ficha.posicion}")
-            
             _fichasUpdateEvent.value = Unit
             
             if (gameInstance.obtenerJugadorActual().fichas.all { it.estado == EstadoFicha.FINALIZADA }) {
-                Log.d("ParchisGame", "🏆 ¡PARTIDA FINALIZADA! Ganador: ${jugadorActual.nombre}")
                 gestionarFinPartida(jugadorActual)
             } else if (gameInstance.movimientosExtra > 0) {
-                // Si ha comido, tiene movimientos extra
                 val extra = gameInstance.movimientosExtra
-                gameInstance.movimientosExtra = 0 // Consumimos el bonus
-
+                gameInstance.movimientosExtra = 0
                 if (gameInstance.puedeMoverFicha(ficha, extra)) {
-                    Log.d("ParchisGame", "🎁 BONUS: ${jugadorActual.nombre} debe mover $extra casillas.")
-                    _diceResult.value = extra // Cambiamos el dado en pantalla al número del bonus
-                    // IMPORTANTE: No llamamos a finalizarTurno(). El jugador debe hacer otro clic.
+                    _diceResult.value = extra
                 } else {
-                    Log.d("ParchisGame", "🚫 Tiene bonus de $extra pero ninguna ficha puede moverse.")
                     finalizarTurno()
                 }
             } else {
@@ -173,27 +147,29 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
     private fun gestionarFinPartida(ganador: Jugador) {
         _gameFinished.value = ganador
         val usuario = SesionUsuario.usuarioLogueado ?: return
-        
         viewModelScope.launch {
             val resultado = if (ganador.nombre == usuario.username) ResultadoPartida.VICTORIA else ResultadoPartida.DERROTA
-            val nuevaPartida = Partida(
-                id = UUID.randomUUID().toString(),
-                fecha = Date(),
-                resultado = resultado,
-                jugadores = game?.jugadores?.map { it.nombre } ?: emptyList(),
-                usernameUsuario = usuario.username
-            )
+            val nuevaPartida = Partida(UUID.randomUUID().toString(), Date(), resultado, game?.jugadores?.map { it.nombre } ?: emptyList(), usuario.username)
+            usuario.agregarPartidaAlHistorial(nuevaPartida)
+            usuarioDao.actualizarUsuario(usuario)
             usuarioDao.insertarPartida(nuevaPartida)
-            Log.d("ParchisGame", "💾 Partida guardada")
+        }
+    }
+
+    fun abandonarPartida() {
+        val usuario = SesionUsuario.usuarioLogueado ?: return
+        viewModelScope.launch {
+            val nuevaPartida = Partida(UUID.randomUUID().toString(), Date(), ResultadoPartida.ABANDONADA, game?.jugadores?.map { it.nombre } ?: emptyList(), usuario.username)
+            usuario.agregarPartidaAlHistorial(nuevaPartida)
+            usuarioDao.actualizarUsuario(usuario)
+            usuarioDao.insertarPartida(nuevaPartida)
         }
     }
 
     private fun finalizarTurno() {
         game?.siguienteTurno()
         _diceResult.value = null 
-        val nuevoJugador = game?.obtenerJugadorActual()
-        _currentPlayer.value = nuevoJugador
-        Log.d("ParchisGame", "🔄 Cambio de turno -> Ahora: ${nuevoJugador?.nombre}")
+        _currentPlayer.value = game?.obtenerJugadorActual()
         verificarTurnoBot()
     }
 }
