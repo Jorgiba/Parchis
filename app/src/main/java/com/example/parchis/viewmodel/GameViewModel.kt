@@ -180,6 +180,9 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
     fun abandonarPartida() {
         val usuario = SesionUsuario.usuarioLogueado ?: return
         val jugadores = game?.jugadores?.map { it.nombre } ?: emptyList()
+        
+        val jugadorHumano = game?.jugadores?.find { it.nombre == usuario.username }
+        usuario.fichasComidas += jugadorHumano?.fichasComidasEnEstaPartida ?: 0
 
         viewModelScope.launch {
             val nuevaPartida = Partida(
@@ -194,7 +197,6 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
                 usuario.agregarPartidaAlHistorial(nuevaPartida)
                 usuarioDao.actualizarUsuario(usuario)
                 usuarioDao.insertarPartida(nuevaPartida)
-                Log.d("ParchisGame", "💾 Abandono registrado en historial")
             }
         }
     }
