@@ -5,6 +5,7 @@ abstract class Jugador(
     val color: ColorParchis
 ) {
     val fichas: List<Ficha> = List(4) { i -> Ficha(i, color) }
+    var fichasComidasEnEstaPartida: Int = 0
     
     abstract fun esBot(): Boolean
 }

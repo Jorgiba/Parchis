@@ -52,6 +52,7 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
     private var game: ParchisGame? = null
 
     fun initGame(jugadores: List<Jugador>) {
+        if (this.game != null) return
         game = ParchisGame(jugadores)
         _currentPlayer.value = game?.obtenerJugadorActual()
         verificarTurnoBot()
@@ -97,7 +98,8 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
                 } else if (gameInstance.movimientosExtra > 0) {
                     val extra = gameInstance.movimientosExtra
                     gameInstance.movimientosExtra = 0
-                    if (gameInstance.puedeMoverFicha(ficha, extra)) {
+                    val puedeMoverAlgunaExtra = bot.fichas.any { gameInstance.puedeMoverFicha(it, extra) }
+                    if (puedeMoverAlgunaExtra) {
                         _diceResult.value = extra
                         delay(1000)
                         ejecutarMovimientoBot(bot, extra)
@@ -136,7 +138,8 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
             } else if (gameInstance.movimientosExtra > 0) {
                 val extra = gameInstance.movimientosExtra
                 gameInstance.movimientosExtra = 0
-                if (gameInstance.puedeMoverFicha(ficha, extra)) {
+                val puedeMoverAlgunaExtra = jugadorActual.fichas.any { gameInstance.puedeMoverFicha(it, extra) }
+                if (puedeMoverAlgunaExtra) {
                     _diceResult.value = extra
                 } else {
                     finalizarTurno()
@@ -151,6 +154,8 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
         _gameFinished.value = ganador
         val usuario = SesionUsuario.usuarioLogueado ?: return
         val jugadores = game?.jugadores?.map { it.nombre } ?: emptyList()
+        val jugadorHumano = game?.jugadores?.find { it.nombre == usuario.username }
+        usuario.fichasComidas += jugadorHumano?.fichasComidasEnEstaPartida ?: 0
 
         viewModelScope.launch {
             val resultado = if (ganador.nombre == usuario.username) ResultadoPartida.VICTORIA else ResultadoPartida.DERROTA

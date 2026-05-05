@@ -108,7 +108,7 @@ class GameFragment : Fragment() {
     }
 
     private fun confirmAbandon() {
-        if (SesionUsuario.usuarioLogueado != null) {
+        if (viewModel.gameFinished.value == null && SesionUsuario.usuarioLogueado != null) {
             viewModel.abandonarPartida()
         }
         val destination = if (SesionUsuario.usuarioLogueado != null) {

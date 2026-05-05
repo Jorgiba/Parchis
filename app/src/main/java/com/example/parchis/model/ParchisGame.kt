@@ -92,7 +92,7 @@ class ParchisGame(
             if (pasos != 5) return false
             val salida = Tablero.SALIDAS[ficha.color] ?: 1
             val fichasEnSalida = jugadores.flatMap { it.fichas }
-                .count { it.posicion == salida && it.estado != EstadoFicha.EN_CASA }
+                .count { it.posicion == salida && (it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META) }
             return fichasEnSalida < 2
         }
 
@@ -118,8 +118,11 @@ class ParchisGame(
             if (i < pasos && hayBarrera(posActual)) return false
         }
 
+        // Casilla de meta (pasillo X08): sin límite de fichas
+        if (posActual >= 100 && posActual % 100 == 8) return true
+
         val fichasDestino = jugadores.flatMap { it.fichas }
-            .count { it.posicion == posActual && it.estado != EstadoFicha.EN_CASA }
+            .count { it.posicion == posActual && (it.estado == EstadoFicha.EN_TABLERO || it.estado == EstadoFicha.EN_META) }
 
         return fichasDestino < 2
     }
@@ -149,7 +152,6 @@ class ParchisGame(
                     if (pos % 100 == 8 && i == pasos) {
                         ficha.estado = EstadoFicha.FINALIZADA
                         movimientosExtra = 10
-                        repiteTurno = true
                     }
                 } else {
                     pos++
@@ -173,9 +175,8 @@ class ParchisGame(
                     if (f.posicion == posicion && f.estado == EstadoFicha.EN_TABLERO) {
                         f.posicion = -1
                         f.estado = EstadoFicha.EN_CASA
+                        jugadores.find { it.color == miColor }?.fichasComidasEnEstaPartida++
                         movimientosExtra = 20
-                        repiteTurno = true
-                        Log.d("ParchisLogic", "⚔️ Captura! +20 pasos.")
                     }
                 }
             }
