@@ -39,7 +39,7 @@ class HistoryAdapter(private val partidas: List<Partida>) :
             }
 
             tvItemResultado.text = resultadoStr
-            tvItemFecha.text = partida.fecha.toFormattedString()n
+            tvItemFecha.text = partida.fecha.toFormattedString()
             tvItemDetalles.text = "Jugadores: ${partida.jugadores.joinToString(", ")}"
 
             val color = if(partida.resultado == ResultadoPartida.VICTORIA)
