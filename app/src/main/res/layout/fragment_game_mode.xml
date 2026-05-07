@@ -16,7 +16,6 @@
         android:fitsSystemWindows="true"
         tools:context=".view.GameModeFragment">
 
-        <!-- Justificación de Layout: ConstraintLayout para colocar elementos de forma flexible y responsive -->
 
         <ImageButton
             android:id="@+id/btnBackMode"

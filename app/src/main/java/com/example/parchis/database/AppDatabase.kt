@@ -24,7 +24,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "parchis_database"
                 )
-                .fallbackToDestructiveMigration() // Esto borrará la DB vieja y creará la nueva con la versión 2
+                .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance
                 instance

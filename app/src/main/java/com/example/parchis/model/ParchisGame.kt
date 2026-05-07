@@ -118,7 +118,6 @@ class ParchisGame(
             if (i < pasos && hayBarrera(posActual)) return false
         }
 
-        // Casilla de meta (pasillo X08): sin límite de fichas
         if (posActual >= 100 && posActual % 100 == 8) return true
 
         val fichasDestino = jugadores.flatMap { it.fichas }
@@ -136,7 +135,6 @@ class ParchisGame(
             ficha.posicion = posDestino
             ficha.estado = EstadoFicha.EN_TABLERO
             acabaDeSalir = true
-            Log.d("ParchisLogic", "🏠 SALIDA: saca ficha ${ficha.id} a casilla $posDestino")
         } else {
             var pos = ficha.posicion
             val entrada = Tablero.ENTRADAS_PASILLO[ficha.color] ?: -1
@@ -197,7 +195,6 @@ class ParchisGame(
 
         for (i in 1..pasos) {
             if (pos == entradaPasillo) {
-                // Entra al pasillo: posición base + pasos restantes
                 pos = basePassillo + (pasos - i + 1)
                 return pos
             }

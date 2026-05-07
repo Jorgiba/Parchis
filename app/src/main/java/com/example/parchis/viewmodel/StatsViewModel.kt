@@ -15,7 +15,6 @@ class StatsViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
     private val _statsResult = MutableLiveData<StatsResult?>()
     val statsResult: LiveData<StatsResult?> = _statsResult
 
-    // LiveData para DataBinding directo en el XML
     val gamesPlayed: LiveData<String> = _statsResult.map { result ->
         if (result is StatsResult.Success) "Partidas jugadas: ${result.usuario.partidasJugadas}" else ""
     }
@@ -36,7 +35,6 @@ class StatsViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
         val usuario = SesionUsuario.usuarioLogueado
         if (usuario != null) {
             viewModelScope.launch {
-                // Actualizar los datos del usuario desde la base de datos para asegurar que están al día
                 val usuarioActualizado = usuarioDao.obtenerUsuario(usuario.username)
                 if (usuarioActualizado != null) {
                     val historial = usuarioDao.obtenerHistorial(usuario.username)

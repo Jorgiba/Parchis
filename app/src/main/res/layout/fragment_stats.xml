@@ -16,10 +16,7 @@
         android:fitsSystemWindows="true"
         tools:context=".view.StatsFragment">
 
-        <!-- Justificación de Layout: ConstraintLayout para colocar elementos de forma flexible y responsive,
-             evitando anidamiento excesivo de vistas y optimizando el rendimiento. -->
 
-        <!-- Botón Volver -->
         <ImageButton
             android:id="@+id/btnBackStats"
             android:layout_width="48dp"
@@ -44,7 +41,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Estadísticas Principales con DataBinding Directo -->
         <TextView
             android:id="@+id/tvGamesPlayed"
             android:layout_width="wrap_content"
@@ -96,7 +92,6 @@
             app:layout_constraintTop_toBottomOf="@id/tvWins"
             tools:text="Fichas comidas: 12" />
 
-        <!-- Botón de Compartir (Intent Implícito) -->
         <Button
             android:id="@+id/btnShareStats"
             android:layout_width="wrap_content"
@@ -120,7 +115,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btnShareStats" />
 
-        <!-- Mejora: Uso de RecyclerView para el historial de partidas (Normas de la profesora) -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvHistory"
             android:layout_width="0dp"

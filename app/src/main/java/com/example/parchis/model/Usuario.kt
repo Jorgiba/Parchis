@@ -11,7 +11,7 @@ abstract class Usuario {
 @Entity(tableName = "usuarios")
 data class UsuarioRegistrado(
     @PrimaryKey val username: String,
-    var email: String = "", // Nuevo campo para vincular con Firebase
+    var email: String = "",
     var partidasJugadas: Int = 0,
     var victorias: Int = 0,
     var derrotas: Int = 0,

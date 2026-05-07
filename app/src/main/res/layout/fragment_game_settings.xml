@@ -16,8 +16,6 @@
         android:fitsSystemWindows="true"
         tools:context=".view.GameSettingsFragment">
 
-        <!-- Justificación de Layout: ConstraintLayout para permitir un diseño flexible
-             y responsivo, optimizando el rendimiento al evitar el anidamiento de vistas. -->
 
         <ImageButton
             android:id="@+id/btnBackSettings"

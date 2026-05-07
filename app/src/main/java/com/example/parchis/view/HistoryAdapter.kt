@@ -11,7 +11,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-// Función de extensión para formatear la fecha (Punto 8 del temario)
 fun Date.toFormattedString(): String {
     return SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(this)
 }
@@ -40,7 +39,7 @@ class HistoryAdapter(private val partidas: List<Partida>) :
             }
 
             tvItemResultado.text = resultadoStr
-            tvItemFecha.text = partida.fecha.toFormattedString() // Uso de la extensión
+            tvItemFecha.text = partida.fecha.toFormattedString()n
             tvItemDetalles.text = "Jugadores: ${partida.jugadores.joinToString(", ")}"
 
             val color = if(partida.resultado == ResultadoPartida.VICTORIA)

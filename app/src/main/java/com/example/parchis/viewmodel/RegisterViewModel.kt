@@ -15,7 +15,6 @@ class RegisterViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
 
     private val auth = FirebaseAuth.getInstance()
 
-    // Variables para DataBinding bidireccional
     val username = MutableLiveData<String>("")
     val email = MutableLiveData<String>("")
     val password = MutableLiveData<String>("")
@@ -42,14 +41,11 @@ class RegisterViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
 
         viewModelScope.launch {
             try {
-                // 1. Crear usuario en Firebase Auth
                 val result = auth.createUserWithEmailAndPassword(e, p).await()
                 val firebaseUser = result.user
 
                 if (firebaseUser != null) {
-                    // 2. Guardar el usuario en la base de datos local (Room) 
-                    // Usamos el email como identificador o el UID de Firebase
-                    val nuevoUsuario = UsuarioRegistrado(u) // Mantenemos el nombre de usuario elegido
+                    val nuevoUsuario = UsuarioRegistrado(u)
                     usuarioDao.insertarUsuario(nuevoUsuario)
                     
                     SesionUsuario.usuarioLogueado = nuevoUsuario

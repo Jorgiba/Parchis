@@ -5,7 +5,6 @@ import java.util.Date
 object SesionUsuario {
     var usuarioLogueado: UsuarioRegistrado? = null
 
-    // Método para simular datos iniciales si no hay nadie logueado (para pruebas)
     fun cargarDatosPrueba() {
         val username = "Ejemplo"
         val user = UsuarioRegistrado(username)
@@ -20,7 +19,6 @@ object SesionUsuario {
         user.agregarPartidaAlHistorial(Partida("9", Date(), ResultadoPartida.VICTORIA, listOf(username, "Jugador2", "Bot1", "Bot3"), username))
         user.agregarPartidaAlHistorial(Partida("10", Date(), ResultadoPartida.DERROTA, listOf(username, "Bot1", "Bot2", "Bot3"), username))
         
-        // Fichas comidas manuales para la prueba
         user.fichasComidas = 65
         
         usuarioLogueado = user

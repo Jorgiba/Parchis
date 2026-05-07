@@ -16,8 +16,6 @@
         android:fitsSystemWindows="true"
         tools:context=".view.HomeFragment">
 
-        <!-- Justificación de Layout: ConstraintLayout para gestionar una interfaz con elementos
-             superpuestos (como el menú lateral) y alineaciones relativas sin anidar vistas. -->
 
         <ImageButton
             android:id="@+id/btnMenu"
@@ -67,7 +65,6 @@
             app:layout_constraintHorizontal_bias="0.495"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Menú lateral mejorado con Material Design -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/sideMenu"
             android:layout_width="180dp"

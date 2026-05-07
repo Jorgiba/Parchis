@@ -33,7 +33,6 @@ class GameSettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Valores por defecto
         binding.rgPlayers.check(binding.rb4.id)
         binding.rgDifficulty.check(binding.rbMedium.id)
 

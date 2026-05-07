@@ -16,9 +16,6 @@
         android:fitsSystemWindows="true"
         tools:context=".view.MainActivity">
 
-        <!-- Justificación de Layout: ConstraintLayout para permitir un diseño flexible
-             y responsivo, optimizando el rendimiento al evitar el anidamiento de vistas. -->
-
         <TextView
             android:id="@+id/textViewTitle"
             android:layout_width="wrap_content"

@@ -16,8 +16,6 @@
         android:fitsSystemWindows="true"
         tools:context=".view.RegisterFragment">
 
-        <!-- Justificación de Layout (Punto 11): ConstraintLayout para un diseño flexible
-             que optimiza el renderizado al evitar el anidamiento de vistas. -->
 
         <ImageButton
             android:id="@+id/btnBackRegister"
@@ -43,7 +41,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Enriquecimiento de Vistas con TextInputLayout (Punto 12 y 16) -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilRegUsername"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"

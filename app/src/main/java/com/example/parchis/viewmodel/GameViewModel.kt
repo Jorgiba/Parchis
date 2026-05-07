@@ -31,7 +31,6 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
     private val _gameFinished = MutableLiveData<Jugador?>()
     val gameFinished: LiveData<Jugador?> = _gameFinished
 
-    // Propiedades para DataBinding
     val diceValue: LiveData<String> = _diceResult.map { it?.toString() ?: "?" }
     
     val turnText: LiveData<String> = _currentPlayer.map { jugador ->
@@ -167,12 +166,10 @@ class GameViewModel(private val usuarioDao: UsuarioDao) : ViewModel() {
                 usernameUsuario = usuario.username
             )
             
-            // Usamos NonCancellable para asegurar que si el usuario sale rápido del fragmento, se guarde igual
             withContext(Dispatchers.IO + NonCancellable) {
                 usuario.agregarPartidaAlHistorial(nuevaPartida)
                 usuarioDao.actualizarUsuario(usuario)
                 usuarioDao.insertarPartida(nuevaPartida)
-                Log.d("ParchisGame", "💾 Partida finalizada guardada en historial")
             }
         }
     }
